@@ -5,6 +5,7 @@ from scipy.cluster.vq import whiten
 from scipy.cluster.vq import kmeans
 from numpy import array
 from pprint import pprint
+np.seterr(divide='ignore', invalid='ignore')
 
 with open('../clientInformation.json') as data_file:
 	data = simplejson.load(data_file)
@@ -40,8 +41,15 @@ for i in range (0,4):
 
 	if data["clients"][i]["customerAssetsVehicles"]:
 		infoMatrix[i,6] = data["clients"][i]["customerAssetsVehicles"][0]["vehiclePurchasePrice"]
+
+
 print infoMatrix
 
-normalised = whiten(infoMatrix)
-print normalised
-print kmeans(normalised,2)
+whitened = whiten(infoMatrix)
+for i in range (0,4):
+	whitened[i,1] = 0;
+	whitened[i,2] = 1;
+
+print whitened
+
+print kmeans(whitened,2)
