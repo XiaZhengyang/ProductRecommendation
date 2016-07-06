@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import simplejson
 import numpy as np
 from pprint import pprint
@@ -20,6 +19,4 @@ for i in range (0,4):
 		infoMatrix[i,3] = "0"
 
 print infoMatrix
-=======
-print "test"
->>>>>>> origin/master
+
