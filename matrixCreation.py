@@ -2,7 +2,7 @@ import simplejson
 import numpy as np
 from pprint import pprint
 
-with open('./clientInformation.json') as data_file:
+with open('../clientInformation.json') as data_file:
 	data = simplejson.load(data_file)
 
 
