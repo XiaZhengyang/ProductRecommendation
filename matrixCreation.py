@@ -11,8 +11,8 @@ np.seterr(divide='ignore', invalid='ignore')
 with open('../clientInformation.json') as data_file:
 	data = simplejson.load(data_file)
 
-
-infoMatrix = np.zeros((4,7),int)
+numberOfFeatures = 7
+infoMatrix = np.zeros((4,numberOfFeatures),int)
 
 
 for i in range (0,4):
@@ -60,10 +60,17 @@ print '===The k-means result is==='
 print clusteringResult
 
 
+theta = [None]*numberOfFeatures
+
+for i in range (0, numberOfFeatures):
+	theta[i] = 1/float(numberOfFeatures)
+print theta
+
+def costFunction(infoMatrix,theta):
+	return kmeans(infoMatrix,numberOfClusters)[1]
 
 
-
-
+print costFunction(infoMatrix,theta)
 
 
 
