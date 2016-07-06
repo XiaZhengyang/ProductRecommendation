@@ -1,5 +1,9 @@
 import simplejson
 import numpy as np
+import scipy 
+from scipy.cluster.vq import whiten
+from scipy.cluster.vq import kmeans
+from numpy import array
 from pprint import pprint
 
 with open('../clientInformation.json') as data_file:
@@ -13,7 +17,7 @@ for i in range (0,4):
 	birthDay= data["clients"][i]["customerBaseExt"]["birthday"]
 	birthYear = int(birthDay[0:4])
 	infoMatrix[i,0] = 2016- birthYear
-	infoMatrix[i,1] =int(data["clients"][i]["customerBaseExt"]["householdRegisterAddrCity"])
+	#infoMatrix[i,1] =int(data["clients"][i]["customerBaseExt"]["householdRegisterAddrCity"])
 	if data["clients"][i]["customerMarriage"]["isMarried"] == "Married":
 		infoMatrix[i,2] =1
 	else:
@@ -38,3 +42,6 @@ for i in range (0,4):
 		infoMatrix[i,6] = data["clients"][i]["customerAssetsVehicles"][0]["vehiclePurchasePrice"]
 print infoMatrix
 
+normalised = whiten(infoMatrix)
+print normalised
+print kmeans(normalised,2)
