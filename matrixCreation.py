@@ -3,6 +3,7 @@ import numpy as np
 import scipy 
 from scipy.cluster.vq import whiten
 from scipy.cluster.vq import kmeans
+from scipy.cluster.vq import kmeans2
 from numpy import array
 from pprint import pprint
 np.seterr(divide='ignore', invalid='ignore')
@@ -45,11 +46,28 @@ for i in range (0,4):
 
 print infoMatrix
 
-whitened = whiten(infoMatrix)
+whitenedMatrix = whiten(infoMatrix)
 for i in range (0,4):
-	whitened[i,1] = 0;
-	whitened[i,2] = 1;
+	whitenedMatrix[i,1] = int(0);
+	whitenedMatrix[i,2] = int(1);
 
-print whitened
+print whitenedMatrix
+numberOfClusters = 2
+resultOfKmeans1 = kmeans(whitenedMatrix,numberOfClusters)
+clusteringResult =  kmeans2(whitenedMatrix,resultOfKmeans1[0],minit='points')
 
-print kmeans(whitened,2)
+print '===The k-means result is==='
+print clusteringResult
+
+
+
+
+
+
+
+
+
+
+
+
+
