@@ -11,7 +11,9 @@ infoMatrix = np.zeros((4,7),int)
 infoMatrix[3,6]=5
 
 for i in range (0,4):
-	infoMatrix[i,0]= int(data["clients"][i]["customerBaseExt"]["birthday"])
+	birthDay= data["clients"][i]["customerBaseExt"]["birthday"]
+	birthYear = int(birthDay[0:4])
+	infoMatrix[i,0] = 2016- birthYear
 	infoMatrix[i,1] =int(data["clients"][i]["customerBaseExt"]["householdRegisterAddrCity"])
 	if data["clients"][i]["customerMarriage"]["isMarried"] == "Married":
 		infoMatrix[i,2] ="1"
