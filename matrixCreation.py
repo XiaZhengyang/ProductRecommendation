@@ -1,3 +1,4 @@
+# coding=utf-8
 import simplejson
 import numpy as np
 import scipy 
@@ -5,11 +6,14 @@ from scipy.cluster.vq import whiten
 from scipy.cluster.vq import kmeans
 from scipy.cluster.vq import kmeans2
 from numpy import array
-from pprint import pprint
 np.seterr(divide='ignore', invalid='ignore')
+
 
 with open('../clientInformation.json') as data_file:
 	data = simplejson.load(data_file)
+print (data)
+
+
 
 numberOfFeatures = 7
 infoMatrix = np.zeros((4,numberOfFeatures),int)
@@ -44,33 +48,49 @@ for i in range (0,4):
 		infoMatrix[i,6] = data["clients"][i]["customerAssetsVehicles"][0]["vehiclePurchasePrice"]
 
 
-print infoMatrix
+print (infoMatrix)
 
 whitenedMatrix = whiten(infoMatrix)
 for i in range (0,4):
 	whitenedMatrix[i,1] = int(0);
 	whitenedMatrix[i,2] = int(1);
 
-print whitenedMatrix
+print (whitenedMatrix)
 numberOfClusters = 2
 resultOfKmeans1 = kmeans(whitenedMatrix,numberOfClusters)
 clusteringResult =  kmeans2(whitenedMatrix,resultOfKmeans1[0],minit='points')
 
-print '===The k-means result is==='
-print clusteringResult
+print ('===The k-means result is===')
+print (clusteringResult)
 
 
-theta = [None]*numberOfFeatures
+theta = np.zeros((numberOfFeatures,1),)
 
-for i in range (0, numberOfFeatures):
-	theta[i] = 1/float(numberOfFeatures)
-print theta
+
+for i in range (0,numberOfFeatures):
+	theta[i]=1/float(numberOfFeatures)			#initialize vector theta
+print (theta)
+
+adjustedMatrix = infoMatrix
+
+
+print (adjustedMatrix)
+	
+
 
 def costFunction(infoMatrix,theta):
 	return kmeans(infoMatrix,numberOfClusters)[1]
 
 
-print costFunction(infoMatrix,theta)
+maximumIteration = 30
+
+
+
+
+print ("The current clustering result is:" )
+print (kmeans2(whitenedMatrix,kmeans(whitenedMatrix,numberOfClusters)[0],minit='points')[1])
+print ("With the cost function value being " )
+print (costFunction(infoMatrix,theta))
 
 
 
