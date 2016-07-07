@@ -82,30 +82,24 @@ def costFunction(originalMatrix,theta):
 def deriv(infoMatrix, theta, h=0.1):
 	partialDerivativeArray = np.zeros(7)
 	print partialDerivativeArray
-	for i in range(0,7):
+	for i in range(7):
 		print "This is: ", i
-		print partialDerivativeArray[i]
-		'''newThetaBig = np.zeros((numberOfFeatures,1),)
 		
+		newThetaBig = np.zeros((numberOfFeatures,1),)
 		for j in range(0,numberOfFeatures):
 			newThetaBig[j] = theta[j]
 		newThetaBig[i] = theta[i] +h
 		newThetaSmall = np.zeros((numberOfFeatures,1),)
-		
 		for j in range(0,numberOfFeatures):
 			newThetaSmall[j] = theta[j]
 		newThetaSmall[i] = theta[i]-h
-		print costFunction(infoMatrix,newThetaBig)
-		print costFunction(infoMatrix,newThetaSmall)
+		
+		big= costFunction(infoMatrix,newThetaBig)
+		small= costFunction(infoMatrix,newThetaSmall)
+		print big-small
 		print '------'
-    	#partialDerivativeArray[i] = (costFunction(infoMatrix,newThetaBig)-costFunction(infoMatrix,newThetaSmall))/(2*h)'''
-    	print '---'
-    	print partialDerivativeArray[i]
-    	partialDerivativeArray[i] = i
-    	print '----'
-    	print partialDerivativeArray[i]
-
-	print partialDerivativeArray
+		partialDerivativeArray[i] = (big-small)/(2*h)
+		print partialDerivativeArray
 
 
 deriv(infoMatrix,theta)
