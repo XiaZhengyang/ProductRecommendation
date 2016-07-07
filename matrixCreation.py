@@ -69,28 +69,46 @@ theta = np.zeros((numberOfFeatures,1),)
 
 for i in range (0,numberOfFeatures):
 	theta[i]=1/float(numberOfFeatures)			#initialize vector theta
-print (theta)
-
-adjustedMatrix = infoMatrix
-
-
-print (adjustedMatrix)
 	
 
 
-def costFunction(infoMatrix,theta):
-	return kmeans(infoMatrix,numberOfClusters)[1]
+def costFunction(originalMatrix,theta):
+	adjustedMatrix = np.zeros((4,numberOfFeatures),float)
+	for i in range(0,4):
+		for j in range(0,numberOfFeatures):
+			adjustedMatrix[i,j] = originalMatrix[i,j]*theta[j]
+	return kmeans(adjustedMatrix,numberOfClusters)[1]
+
+def deriv(infoMatrix, theta, h=0.1):
+	partialDerivativeArray = np.zeros(7)
+	print partialDerivativeArray
+	for i in range(0,7):
+		print "This is: ", i
+		print partialDerivativeArray[i]
+		'''newThetaBig = np.zeros((numberOfFeatures,1),)
+		
+		for j in range(0,numberOfFeatures):
+			newThetaBig[j] = theta[j]
+		newThetaBig[i] = theta[i] +h
+		newThetaSmall = np.zeros((numberOfFeatures,1),)
+		
+		for j in range(0,numberOfFeatures):
+			newThetaSmall[j] = theta[j]
+		newThetaSmall[i] = theta[i]-h
+		print costFunction(infoMatrix,newThetaBig)
+		print costFunction(infoMatrix,newThetaSmall)
+		print '------'
+    	#partialDerivativeArray[i] = (costFunction(infoMatrix,newThetaBig)-costFunction(infoMatrix,newThetaSmall))/(2*h)'''
+    	print '---'
+    	print partialDerivativeArray[i]
+    	partialDerivativeArray[i] = i
+    	print '----'
+    	print partialDerivativeArray[i]
+
+	print partialDerivativeArray
 
 
-maximumIteration = 30
-
-
-
-
-print ("The current clustering result is:" )
-print (kmeans2(whitenedMatrix,kmeans(whitenedMatrix,numberOfClusters)[0],minit='points')[1])
-print ("With the cost function value being " )
-print (costFunction(infoMatrix,theta))
+deriv(infoMatrix,theta)
 
 
 
