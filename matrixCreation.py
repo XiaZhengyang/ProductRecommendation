@@ -11,10 +11,8 @@ np.seterr(divide='ignore', invalid='ignore')
 
 with open('../clientInformation.json') as data_file:
 	data = simplejson.load(data_file)
-print (data)
 
-
-
+alpha = 0.000001
 numberOfFeatures = 7
 infoMatrix = np.zeros((4,numberOfFeatures),int)
 
@@ -52,7 +50,7 @@ print (infoMatrix)
 
 whitenedMatrix = whiten(infoMatrix)
 for i in range (0,4):
-	whitenedMatrix[i,1] = int(0);
+	whitenedMatrix[i,1] = int(1);
 	whitenedMatrix[i,2] = int(1);
 
 print (whitenedMatrix)
@@ -65,26 +63,18 @@ print (clusteringResult)
 
 
 theta = np.zeros((numberOfFeatures,1),)
-
-
 for i in range (0,numberOfFeatures):
-	theta[i]=1/float(numberOfFeatures)			#initialize vector theta
+	theta[i]=1			#initialize vector theta
 	
 
 
 def costFunction(originalMatrix,theta):
-	adjustedMatrix = np.zeros((4,numberOfFeatures),float)
-	for i in range(0,4):
-		for j in range(0,numberOfFeatures):
-			adjustedMatrix[i,j] = originalMatrix[i,j]*theta[j]
+	adjustedMatrix = originalMatrix*np.transpose(theta)
 	return kmeans(adjustedMatrix,numberOfClusters)[1]
 
-def deriv(infoMatrix, theta, h=0.1):
+def deriv(infoMatrix, theta, h=0.005):
 	partialDerivativeArray = np.zeros(7)
-	print partialDerivativeArray
 	for i in range(7):
-		print "This is: ", i
-		
 		newThetaBig = np.zeros((numberOfFeatures,1),)
 		for j in range(0,numberOfFeatures):
 			newThetaBig[j] = theta[j]
@@ -94,17 +84,29 @@ def deriv(infoMatrix, theta, h=0.1):
 			newThetaSmall[j] = theta[j]
 		newThetaSmall[i] = theta[i]-h
 		
-		big= costFunction(infoMatrix,newThetaBig)
-		small= costFunction(infoMatrix,newThetaSmall)
-		print big-small
-		print '------'
-		partialDerivativeArray[i] = (big-small)/(2*h)
-		print partialDerivativeArray
+		partialDerivativeArray[i] = (costFunction(infoMatrix,newThetaBig)-costFunction(infoMatrix,newThetaSmall))/(2*h)
+	return partialDerivativeArray
 
+def updateTheta(data, theta):
+	#print theta
+	tempStoreNewTheta = np.zeros((numberOfFeatures,1),)
+	for i in range(0,numberOfFeatures):
+		tempStoreNewTheta[i] = theta[i] - alpha*(deriv(data,theta)[i])
+	for i in range(0, numberOfFeatures):
+		theta[i] = tempStoreNewTheta[i]
+	#print theta
+	return costFunction(data, theta)
+	#print "====="
 
-deriv(infoMatrix,theta)
+cost = np.zeros(1000)
+for i in range(1000):
 
-
+	cost[i] = updateTheta(infoMatrix,theta);
+	print cost[i]
+	if ((i>1) & (cost[i-1] - cost[i] < 0.001)):
+		print cost[i-1], '   ', cost[i]
+		break
+print theta
 
 
 
