@@ -5,6 +5,7 @@ import scipy
 from scipy.cluster.vq import whiten
 from scipy.cluster.vq import kmeans
 from scipy.cluster.vq import kmeans2
+from scipy.optimize import minimize
 from numpy import array
 np.seterr(divide='ignore', invalid='ignore')
 
@@ -65,11 +66,11 @@ print (clusteringResult)
 theta = np.zeros((numberOfFeatures,1),)
 for i in range (0,numberOfFeatures):
 	theta[i]=1			#initialize vector theta
-	
 
 
-def costFunction(originalMatrix,theta):
-	adjustedMatrix = originalMatrix*np.transpose(theta)
+
+def costFunction(originalMatrix,thetaInput):
+	adjustedMatrix = (originalMatrix)*(np.transpose(thetaInput))
 	return kmeans(adjustedMatrix,numberOfClusters)[1]
 
 def deriv(infoMatrix, theta, h=0.005):
@@ -97,7 +98,7 @@ def updateTheta(data, theta):
 	#print theta
 	return costFunction(data, theta)
 	#print "====="
-
+'''
 cost = np.zeros(1000)
 for i in range(1000):
 
@@ -107,7 +108,9 @@ for i in range(1000):
 		print cost[i-1], '   ', cost[i]
 		break
 print theta
+'''
 
+print minimize(costFunction(infoMatrix,theta),theta);
 
 
 
