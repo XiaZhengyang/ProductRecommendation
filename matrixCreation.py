@@ -13,7 +13,7 @@ np.seterr(divide='ignore', invalid='ignore')
 with open('./newData/new-data/Customer_info.json') as data_file:
 	data = simplejson.load(data_file)
 
-numberOfClusters = 3
+numberOfClusters = 5
 alpha = 0.000001
 numberOfFeatures = 7
 infoMatrix = np.zeros((1,numberOfFeatures),int)
@@ -62,12 +62,12 @@ for i in range (0,108):
 		if 'customerAssetsIncome' in data["clients"][i]:
 			monthlyNetIncome = data["clients"][i]["customerAssetsIncome"]["monthlySalary"] + data["clients"][i]["customerAssetsIncome"]["monthlyIncomeOther"] - data["clients"][i]["customerAssetsIncome"]["monthlyExpense"]
 			annualNetIncome = data["clients"][i]["customerAssetsIncome"]["yearlyIncome"] - data["clients"][i]["customerAssetsIncome"]["monthlyExpense"]*12
-			infoMatrix[validSampleCount-1,4] = max(monthlyNetIncome,annualNetIncome/12)
+			infoMatrix[validSampleCount-1,4] = max(monthlyNetIncome,annualNetIncome/12)/100
 			infoMatrix[validSampleCount-1,5] = data["clients"][i]["customerAssetsIncome"]["dependentNumber"]
 
 		#Vehicle Ownership
 		if data["clients"][i]["customerAssetsVehicles"]:
-			infoMatrix[validSampleCount-1,6] = data["clients"][i]["customerAssetsVehicles"][0]["vehiclePurchasePrice"]
+			infoMatrix[validSampleCount-1,6] = float(data["clients"][i]["customerAssetsVehicles"][0]["vehiclePurchasePrice"])/100
 
 
 
@@ -95,42 +95,51 @@ def costFunction(originalMatrix,thetaInput):
 	adjustedMatrix = (originalMatrix)*(np.transpose(thetaInput))
 	return kmeans(adjustedMatrix,numberOfClusters)[1]
 
-def deriv(infoMatrix, theta, h=0.005):
-	partialDerivativeArray = np.zeros(7)
-	for i in range(7):
-		newThetaBig = np.zeros((numberOfFeatures,1),)
-		for j in range(0,numberOfFeatures):
-			newThetaBig[j] = theta[j]
-		newThetaBig[i] = theta[i] +h
-		newThetaSmall = np.zeros((numberOfFeatures,1),)
-		for j in range(0,numberOfFeatures):
-			newThetaSmall[j] = theta[j]
-		newThetaSmall[i] = theta[i]-h
+def partialDerivative(infoMatrix, theta, i,h=0.005):
+	newThetaBig = np.zeros((numberOfFeatures,1),)
+	newThetaSmall = np.zeros((numberOfFeatures,1),)
+	for j in range(0,numberOfFeatures):
+		newThetaBig[j] = theta[j]
+		newThetaSmall[j] = theta[j]
 		
-		partialDerivativeArray[i] = (costFunction(infoMatrix,newThetaBig)-costFunction(infoMatrix,newThetaSmall))/(2*h)
-	return partialDerivativeArray
+	newThetaSmall[i] = theta[i]-h
+	newThetaBig[i] = theta[i] +h
+				
+	return (costFunction(infoMatrix,newThetaBig)-costFunction(infoMatrix,newThetaSmall))/(2*h)
+	
 
 def updateTheta(data, theta):
-	#print theta
 	tempStoreNewTheta = np.zeros((numberOfFeatures,1),)
 	for i in range(0,numberOfFeatures):
-		tempStoreNewTheta[i] = theta[i] - alpha*(deriv(data,theta)[i])
+		tempStoreNewTheta[i] = theta[i] - alpha*(partialDerivative(data,theta,i))
 	for i in range(0, numberOfFeatures):
 		theta[i] = tempStoreNewTheta[i]
-	#print theta
 	return costFunction(data, theta)
-	#print "====="
 
-cost = np.zeros(50)
-for i in range(50):
+
+
+cost = np.zeros(1000)
+for i in range(1000):
 
 	cost[i] = updateTheta(infoMatrix,theta);
 	print cost[i]
-	if ((i>1) & (abs(cost[i-1] - cost[i]) < 0.001)):
+	if ((i>1) & (abs(cost[i-1] - cost[i]) < 0.0001)):
 		print cost[i-1], '   ', cost[i]
 		break
-print theta
 
-print infoMatrix*np.transpose(theta).astype(int)
+weightedMatrix = infoMatrix*np.transpose(theta)
 
+clusterResult = kmeans2(weightedMatrix,kmeans(weightedMatrix,numberOfClusters)[0],minit='points')
+print clusterResult[1]
+newClient = np.zeros(numberOfFeatures)
+for i in range(0,numberOfFeatures):
+	newClient[i] = raw_input("Please enter the feature of newClient-->")
+
+print newClient
+distance = np.zeros(numberOfClusters)
+for i in range(numberOfClusters):
+	for j in range(numberOfFeatures):
+		distance[i]+=(newClient[j] - clusterResult[0][i,j])**2
+
+print "The new client belongs to cluster number ", np.argmin(distance)
 
