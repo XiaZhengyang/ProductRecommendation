@@ -10,58 +10,80 @@ from numpy import array
 np.seterr(divide='ignore', invalid='ignore')
 
 
-with open('../clientInformation.json') as data_file:
+with open('./newData/new-data/Customer_info.json') as data_file:
 	data = simplejson.load(data_file)
 
+numberOfClusters = 3
 alpha = 0.000001
 numberOfFeatures = 7
-infoMatrix = np.zeros((4,numberOfFeatures),int)
+infoMatrix = np.zeros((1,numberOfFeatures),int)
+validSampleCount = 0
 
 
-for i in range (0,4):
-	birthDay= data["clients"][i]["customerBaseExt"]["birthday"]
-	birthYear = int(birthDay[0:4])
-	infoMatrix[i,0] = 2016- birthYear
-	#infoMatrix[i,1] =int(data["clients"][i]["customerBaseExt"]["householdRegisterAddrCity"])
-	if data["clients"][i]["customerMarriage"]["isMarried"] == "Married":
-		infoMatrix[i,2] =1
-	else:
-		infoMatrix[i,2] = 0
-	educationString = data["clients"][i]["customerEducations"][0]["education"]
+for i in range (0,108):
+	if 'customerBaseExt' in data["clients"][i]:
+		validSampleCount = validSampleCount+1
+		infoMatrix.resize((validSampleCount,numberOfFeatures))
+		
+		#Age
+		birthDay= data["clients"][i]["customerBaseExt"]["birthday"]
+		birthYear = int(birthDay[0:4])
+		infoMatrix[validSampleCount-1,0] = 2016- birthYear
 
-	if educationString == "Bachelor":
-		infoMatrix[i,3] = 4
-	elif educationString =="College":
-		infoMatrix[i,3] = 3
-	elif educationString == "Senior":
-		infoMatrix[i,3] = 2
-	else:
-		infoMatrix[i,3] = 1
 
-	assetIncome = data["clients"][i]["customerAssetsIncome"]["monthlySalary"] + data["clients"][i]["customerAssetsIncome"]["monthlyIncomeOther"] - data["clients"][i]["customerAssetsIncome"]["monthlyExpense"]
-	infoMatrix[i,4] = assetIncome;
+		
+		#Gender
+		gender = data["clients"][i]["customerBaseExt"]["gender"]
+		if gender == "Male":
+			infoMatrix[validSampleCount-1,1] = 1
+		if gender == "Female":
+			infoMatrix[validSampleCount-1,1] = 2 
+		
 
-	infoMatrix[i,5] = data["clients"][i]["customerAssetsIncome"]["dependentNumber"]
+		#Maritial Status
+		if data["clients"][i]["customerMarriage"]["isMarried"] == "Married":
+			infoMatrix[validSampleCount-1,2] =1
+		else:
+			infoMatrix[validSampleCount-1,2] = 0
+		educationString = data["clients"][i]["customerEducations"][0]["education"]
 
-	if data["clients"][i]["customerAssetsVehicles"]:
-		infoMatrix[i,6] = data["clients"][i]["customerAssetsVehicles"][0]["vehiclePurchasePrice"]
+
+		#Education Background
+		if educationString == "Bachelor":
+			infoMatrix[validSampleCount-1,3] = 4
+		elif educationString =="College":
+			infoMatrix[validSampleCount-1,3] = 3
+		elif educationString == "Senior":
+			infoMatrix[validSampleCount-1,3] = 2
+		else:
+			infoMatrix[validSampleCount-1,3] = 1
+
+		#Monthly Income & no. of dependent(s)
+		if 'customerAssetsIncome' in data["clients"][i]:
+			monthlyNetIncome = data["clients"][i]["customerAssetsIncome"]["monthlySalary"] + data["clients"][i]["customerAssetsIncome"]["monthlyIncomeOther"] - data["clients"][i]["customerAssetsIncome"]["monthlyExpense"]
+			annualNetIncome = data["clients"][i]["customerAssetsIncome"]["yearlyIncome"] - data["clients"][i]["customerAssetsIncome"]["monthlyExpense"]*12
+			infoMatrix[validSampleCount-1,4] = max(monthlyNetIncome,annualNetIncome/12)
+			infoMatrix[validSampleCount-1,5] = data["clients"][i]["customerAssetsIncome"]["dependentNumber"]
+
+		#Vehicle Ownership
+		if data["clients"][i]["customerAssetsVehicles"]:
+			infoMatrix[validSampleCount-1,6] = data["clients"][i]["customerAssetsVehicles"][0]["vehiclePurchasePrice"]
+
 
 
 print (infoMatrix)
-
+'''
 whitenedMatrix = whiten(infoMatrix)
-for i in range (0,4):
-	whitenedMatrix[i,1] = int(1);
-	whitenedMatrix[i,2] = int(1);
 
 print (whitenedMatrix)
-numberOfClusters = 2
+
+
 resultOfKmeans1 = kmeans(whitenedMatrix,numberOfClusters)
 clusteringResult =  kmeans2(whitenedMatrix,resultOfKmeans1[0],minit='points')
 
 print ('===The k-means result is===')
 print (clusteringResult)
-
+'''
 
 theta = np.zeros((numberOfFeatures,1),)
 for i in range (0,numberOfFeatures):
@@ -98,20 +120,17 @@ def updateTheta(data, theta):
 	#print theta
 	return costFunction(data, theta)
 	#print "====="
-'''
-cost = np.zeros(1000)
-for i in range(1000):
+
+cost = np.zeros(50)
+for i in range(50):
 
 	cost[i] = updateTheta(infoMatrix,theta);
 	print cost[i]
-	if ((i>1) & (cost[i-1] - cost[i] < 0.001)):
+	if ((i>1) & (abs(cost[i-1] - cost[i]) < 0.001)):
 		print cost[i-1], '   ', cost[i]
 		break
 print theta
-'''
 
-print minimize(costFunction(infoMatrix,theta),theta);
-
-
+print infoMatrix*np.transpose(theta).astype(int)
 
 
