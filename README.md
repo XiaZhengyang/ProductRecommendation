@@ -8,19 +8,19 @@ The libraries needed include simplejson, numpy and scipy.
 
 At the very first step, load the json file and decode it.
 
-### 1. Delete all empty entries
+#### 1. Delete all empty entries
 
 
-### 2. Construct the initial infoMatrix
+#### 2. Construct the initial infoMatrix
 
 
-### 3. Find the theta which yields the minimun distortion
+#### 3. Find the theta which yields the minimun distortion
 
 
-### 4. Perform K-means clustering to give a groupping
+#### 4. Perform K-means clustering to give a groupping
 
 
-### 5. Input a new entry of customer information, and find the cluster that it belongs to
+#### 5. Input a new entry of customer information, and find the cluster that it belongs to
 
 
 ***
