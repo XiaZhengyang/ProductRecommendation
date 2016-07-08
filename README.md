@@ -17,15 +17,17 @@ At the preparation stage, load the json file and decode it.
 
 This is a m*k matrix, where m is the number of (valid) training examples and k is the number of features concerned. In our example, k is set to be 7 while m need not to be initialized upon the creation of this matrix. Instead, the matrix is rescaled to form a new row everytime a valid entry of data is found, and the personal particulars of the client on the newly found valid entry is put into the new row of the matrix. In the given example, this process will eventually yield a matrix of size 20 by 7.
 
-
+***
 #### 2. Find the theta which yields the minimun distortion
 2.找出能使得K-means产生最小误差的theta向量。
 
 
-
+***
 #### 3. Perform K-means clustering to give a groupping
 3.对客户信息矩阵中的信息进行K-means聚类分析，并得到一个分组方案以及每个组的重心的坐标。
 
+
+***
 #### 4. Input a new entry of customer information, and find the cluster that it belongs to
 4.输入一条新的客户信息，然后找到它所属的簇。（每个簇代表一种产品）
 
