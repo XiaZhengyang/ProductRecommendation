@@ -7,7 +7,7 @@ Approximately 100 entries of customer information were provided as raw data, and
 原始数据中大约有100条客户信息。它们的格式是JSON。
 
 The libraries needed include simplejson, numpy and scipy.
-在python中，我们需要用到simplejson,numpy和scipy这三个库去解析这些数据。
+在python中，我们需要用到simplejson,numpy和scipy这三个库去~~解析这些数据~~。
 
 At the preparation stage, load the json file and decode it.
 在准备阶段，我们需要加载出这个JSON文件并对其进行解码。
@@ -15,7 +15,11 @@ At the preparation stage, load the json file and decode it.
 #### 1. Construct the initial infoMatrix which does not include empty entries
 1.建立最初的储存客户信息的矩阵,这个矩阵不包括空白的客户信息。
 
-This is a m*k matrix, where m is the number of (valid) training examples and k is the number of features concerned. In our example, k is set to be 7 while m need not to be initialized upon the creation of this matrix. Instead, the matrix is rescaled to form a new row everytime a valid entry of data is found, and the personal particulars of the client on the newly found valid entry is put into the new row of the matrix. In the given example, this process will eventually yield a matrix of size 20 by 7.
+This is a m*k matrix, where m is the number of (valid) training examples and k is the number of features concerned. In our example, k is set to be 7 while m need not to be initialized upon the creation of this matrix. Instead, the matrix is rescaled to form a new row everytime a valid entry of data is found, and the personal particulars of the client on the newly found valid entry is put into the new row of the matrix. In the given example, this process will eventually yield a matrix of size 20 by 7. The seven attributes are age, gender, maritial status, education, number of dependent(s) and value of vehicle.
+
+建立一个m乘k的矩阵，来储存用户的个人信息。其中，m是有效训练样本的数目，k是特征的数目。创建矩阵时，它的大小是1*k，随后，扫描输入的JSON文件，每发现一条有内容的用户信息，就把现有的矩阵增加一行，并把这个用户的信息存进新的行里面。在这个例子中，这一过程将会得到20乘7的矩阵，代表有20条有效用户信息，对每个用户都记录了7个属性（包括年龄、性别、婚姻状态、学历、月收入、受养人数目、车辆价值）。
+
+
 
 ***
 #### 2. Find the theta which yields the minimun distortion
