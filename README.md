@@ -47,10 +47,10 @@ The number of products (namely the number of clusters) is unknown.
 
 
 Which kind of product did each customer actually buy is unknown.
-未知被分析的顾客实际上买了哪种产品。
+未知被分析的顾客实际上买了哪种产品。(因此无法评估是次训练的准确度)
 
-
-
+How to quantify non-quantitative data (e.g. Occupation, Residential address, etc)
+如何量化非定量的信息？（比如职业，家庭住址等等）
 
 
 
