@@ -26,13 +26,14 @@ This is a m*k matrix, where m is the number of (valid) training examples and k i
 2.找出能使得K-means产生最小误差的theta向量。
 
 Theta is effectively a 1*7 matrix that assigns a different weighting to each feature. Different theta corresponds to different output (centroids and distortion value) of the k-means algorithm after combining with the information matrix. After every run of the k-means function, all theta values are simultaneously updated with the gradient descent algorithm. Theta is initialised to rescale all features to approximately 1 in order to make the function converge more efficiently. The smallest distortion value and its corresponding theta from 500 iterations are saved as the temporary optimum.
+Theta是一个1*7的矩阵，包括了每一项特征对应的比重。不同的theta与训练样本结合后经过k-means算法会产生不同的簇类和误差。每运行一次k-means算法后，theta中的所有值都按照梯度下降法同时更新为新的值。为了提高梯度学习的效率，初始的theta值将所有特征值都大致放缩到1附近。在500次迭代中最小的distortion值和其对应的theta被保存为暂时的最佳结果。
 
 
 ***
 #### 3. Perform K-means clustering to give a groupping
 3.对客户信息矩阵中的信息进行K-means聚类分析，并得到一个分组方案以及每个组的重心的坐标。
 Due to the randomness of initialising cluster centroids in the k-means algorithm, its outcome may vary in different attempts. We repeat the process in step 2 multiple times to make sure that the algorithm returns the global minimum of the distortion function. The cluster centroids that yields the smallest distortion value is recorded.
-
+由于k-means算法中初始簇划分的随机性，其多次运行可能会产生不同的结果。因此，我们多次重复第2步的过程，将其中最小的distortion值对应的theta和簇中心点保存为用于预测的最佳参数。
 
 ***
 #### 4. Input a new entry of customer information, and find the cluster that it belongs to
