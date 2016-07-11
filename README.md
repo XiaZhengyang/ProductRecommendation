@@ -7,7 +7,7 @@ Approximately 100 entries of customer information were provided as raw data, and
 原始数据中大约有100条客户信息。它们的格式是JSON。
 
 The libraries needed include simplejson, numpy and scipy.
-在python中，我们需要用到simplejson,numpy和scipy这三个库去~~解析这些数据~~。
+在python中，我们需要用到simplejson,numpy和scipy这三个库去解析这些数据。
 
 At the preparation stage, load the json file and decode it.
 在准备阶段，我们需要加载出这个JSON文件并对其进行解码。
