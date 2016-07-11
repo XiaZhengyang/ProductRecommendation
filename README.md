@@ -54,8 +54,3 @@ Which kind of product did each customer actually buy is unknown.
 
 How to quantify non-quantitative data (e.g. Occupation, Residential address, etc)
 如何量化非定量的信息？（比如职业，家庭住址等等）
-
-Attributes including gender, maritial status, etc. are non-ordinal data and should be handled with Value Difference Metric.
-性别和婚姻状态等变量不属于那种可以按1，2，3，4来打分量化的属性，因此应使用VDM法来处理，而非赋予0/1分
-
-
