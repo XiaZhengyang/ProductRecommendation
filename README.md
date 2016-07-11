@@ -30,18 +30,21 @@ This is a m*k matrix, where m is the number of (valid) training examples and k i
 #### 3. Perform K-means clustering to give a groupping
 3.对客户信息矩阵中的信息进行K-means聚类分析，并得到一个分组方案以及每个组的重心的坐标。
 
+This step shall be completed by the kmeans function from scipy library.
+
 
 ***
 #### 4. Input a new entry of customer information, and find the cluster that it belongs to
 4.输入一条新的客户信息，然后找到它所属的簇。（每个簇代表一种产品）
 
 When the user inputs the seven attributes of a customer manually, the program shall calculate its Eucledian distance to all the cluster centroids, and give the index of the centroid that this new data point is closest to. The cluster that the new point belongs to denotes the type of product that she/he is most likely to buy.
+每次输入一个新的客户的各项特征，程序将计算它离每个聚类中心的欧氏距离，并给出这个新数据应属的簇。这个新客户数据所属的簇代表她/他最可能购买的产品。
 
 
 
 ***
 
-#### Issues to be solved:
+#### Issues to be solved: 待解决的问题：
 The number of products (namely the number of clusters) is unknown.
 暂时未知总共有多少种产品（总共有多少类）。
 
