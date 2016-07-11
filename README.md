@@ -23,13 +23,13 @@ This is a m*k matrix, where m is the number of (valid) training examples and k i
 
 ***
 #### 2. Find the theta which yields the minimun distortion
-2.找出能使得K-means产生最小误差的theta向量。
+2.找出能使得K-means产生最小误差的theta向量。,
 
 
 ***
 #### 3. Perform K-means clustering to give a groupping
 3.对客户信息矩阵中的信息进行K-means聚类分析，并得到一个分组方案以及每个组的重心的坐标。
-
+testing
 This step shall be completed by the kmeans function from scipy library.
 
 
