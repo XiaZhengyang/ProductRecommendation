@@ -23,14 +23,15 @@ This is a m*k matrix, where m is the number of (valid) training examples and k i
 
 ***
 #### 2. Find the theta which yields the minimun distortion
-2.找出能使得K-means产生最小误差的theta向量。,
+2.找出能使得K-means产生最小误差的theta向量。
+
+Theta is effectively a 1*7 matrix that assigns a different weighting to each feature. Different theta corresponds to different output (centroids and distortion value) of the k-means algorithm after combining with the information matrix. After every run of the k-means function, all theta values are simultaneously updated with the gradient descent algorithm. Theta is initialised to rescale all features to approximately 1 in order to make the function converge more efficiently. The smallest distortion value and its corresponding theta from 500 iterations are saved as the temporary optimum.
 
 
 ***
 #### 3. Perform K-means clustering to give a groupping
 3.对客户信息矩阵中的信息进行K-means聚类分析，并得到一个分组方案以及每个组的重心的坐标。
-testing
-This step shall be completed by the kmeans function from scipy library.
+Due to the randomness of initialising cluster centroids in the k-means algorithm, its outcome may vary in different attempts. We repeat the process in step 2 multiple times to make sure that the algorithm returns the global minimum of the distortion function. The cluster centroids that yields the smallest distortion value is recorded.
 
 
 ***
