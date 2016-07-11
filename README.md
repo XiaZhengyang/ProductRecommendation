@@ -23,7 +23,7 @@ This is a m*k matrix, where m is the number of (valid) training examples and k i
 
 ***
 #### 2. Find the theta which yields the minimun distortion
-2.找出能使得K-means产生最小误差的theta向量。
+2.找出能使得K-means产生最小误差的theta向量。,
 
 
 ***
