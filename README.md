@@ -40,3 +40,18 @@ When the user inputs the seven attributes of a customer manually, the program sh
 
 
 ***
+
+#### Issues to be solved:
+The number of products (namely the number of clusters) is unknown.
+暂时未知总共有多少种产品（总共有多少类）。
+
+
+Which kind of product did each customer actually buy is unknown.
+未知被分析的顾客实际上买了哪种产品。
+
+
+
+
+
+
+

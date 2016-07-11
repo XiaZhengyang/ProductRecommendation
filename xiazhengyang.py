@@ -7,7 +7,7 @@ from scipy.optimize import minimize
 from numpy import size
 from numpy import transpose
 
-with open('./newData/new-data/Customer_info.json') as data_file:
+with open('./newData/new-data/Customer_info.json', encoding = 'utf-8') as data_file:
 	data = simplejson.load(data_file)
 
 sampleNum = size(data["clients"])

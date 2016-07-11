@@ -10,7 +10,7 @@ from numpy import array
 np.seterr(divide='ignore', invalid='ignore')
 
 
-with open('./newData/new-data/Customer_info.json') as data_file:
+with open('../newData/new-data/Customer_info.json') as data_file:
 	data = simplejson.load(data_file)
 
 numberOfClusters = 5
