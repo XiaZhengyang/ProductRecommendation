@@ -4,6 +4,8 @@ import numpy as np
 import scipy 
 from numpy import array
 from sklearn.cluster import KMeans
+from sklearn import preprocessing
+from scipy.cluster.vq import whiten
 
 
 with open('../newData/new-data/Customer_info.json') as data_file:
@@ -24,7 +26,7 @@ for i in range (0,108):
 		#Age
 		birthDay= data["clients"][i]["customerBaseExt"]["birthday"]
 		birthYear = int(birthDay[0:4])
-		infoMatrix[validSampleCount-1,0] = (2016- birthYear)/float(10)
+		infoMatrix[validSampleCount-1,0] = (2016- birthYear)
 
 
 		
@@ -58,66 +60,56 @@ for i in range (0,108):
 		if 'customerAssetsIncome' in data["clients"][i]:
 			monthlyNetIncome = data["clients"][i]["customerAssetsIncome"]["monthlySalary"] + data["clients"][i]["customerAssetsIncome"]["monthlyIncomeOther"] - data["clients"][i]["customerAssetsIncome"]["monthlyExpense"]
 			annualNetIncome = data["clients"][i]["customerAssetsIncome"]["yearlyIncome"] - data["clients"][i]["customerAssetsIncome"]["monthlyExpense"]*12
-			infoMatrix[validSampleCount-1,4] = max(monthlyNetIncome,annualNetIncome/12)/float(10000)
+			infoMatrix[validSampleCount-1,4] = max(monthlyNetIncome,annualNetIncome/12)/float(1000)
 			infoMatrix[validSampleCount-1,5] = data["clients"][i]["customerAssetsIncome"]["dependentNumber"]
 
 		#Vehicle Ownership
 		if data["clients"][i]["customerAssetsVehicles"]:
-			infoMatrix[validSampleCount-1,6] = float(data["clients"][i]["customerAssetsVehicles"][0]["vehiclePurchasePrice"])/float(100000)
+			infoMatrix[validSampleCount-1,6] = float(data["clients"][i]["customerAssetsVehicles"][0]["vehiclePurchasePrice"])/float(1000)
 
 
-
+#Feature Scaling and record the scaling coefficients
 print (infoMatrix)
+scaledMatrix = whiten(infoMatrix)
+scalingCoefficient = np.zeros((numberOfFeatures,1),)
+for i in range(numberOfFeatures):
+	j =0 			#traverse all training examples until a non-zero number if found
+	while (infoMatrix[j,i]==0):
+		j=j+1
+	scalingCoefficient[i] = scaledMatrix[j,i]/infoMatrix[j,i]	
+print scalingCoefficient
+print scaledMatrix
 
 
-theta = np.zeros((numberOfFeatures,1),)
-for i in range (0,numberOfFeatures):
-	theta[i]=1			#initialize vector theta
+#Perform optimization
+kmObject = KMeans(4,n_init=75)
+kmObject.fit(scaledMatrix)
+print kmObject.labels_, kmObject.inertia_
 
-
-
-def costFunction(originalMatrix,thetaInput):
-	adjustedMatrix = (originalMatrix)*(np.transpose(thetaInput))
-	kmeansObject = KMeans(numberOfClusters,n_init=50)
-	kmeansObject.fit(adjustedMatrix)
-	return kmeansObject.inertia_
-
-def partialDerivative(infoMatrix, theta, i,h=0.005):
-	newThetaBig = np.zeros((numberOfFeatures,1),)
-	newThetaSmall = np.zeros((numberOfFeatures,1),)
-	for j in range(0,numberOfFeatures):
-		newThetaBig[j] = theta[j]
-		newThetaSmall[j] = theta[j]
-	newThetaSmall[i] = theta[i]-h
-	newThetaBig[i] = theta[i] +h			
-	return (costFunction(infoMatrix,newThetaBig)-costFunction(infoMatrix,newThetaSmall))/(2*h)
-	
-
-def updateTheta(data, thetaInput):
-	tempStoreNewTheta = np.zeros((numberOfFeatures,1),)
-	for i in range(0,numberOfFeatures):
-		tempStoreNewTheta[i] = thetaInput[i] - alpha*(partialDerivative(data,thetaInput,i))
-	return tempStoreNewTheta
-
-
-
-
-
-
-
-
-
-'''
-
-
-
-weightedMatrix = infoMatrix*np.transpose(theta)
-
+#Input a new client information and scale it
 newClient = np.zeros(numberOfFeatures)
 for i in range(0,numberOfFeatures):
 	newClient[i] = raw_input("Please enter the feature of newClient-->")
+newClientScaled = np.zeros(numberOfFeatures)
+for i in range(numberOfFeatures):
+	newClientScaled[i] = newClient[i]*scalingCoefficient[i]
+print newClientScaled
 
-print newClient
+#Calculate the distances of new client to the cluster-centroids
+distance = np.zeros(numberOfClusters)
+for i in range(numberOfClusters):
+	for j in range(numberOfFeatures):
+		distance[i]+=(newClientScaled[j] - kmObject.cluster_centers_[i,j])**2
+
+print distance
 print "The new client belongs to cluster number ", np.argmin(distance)
 
-'''
+
+
+
+
+
+
+
+
+
