@@ -133,11 +133,37 @@ for i in range(numSample):
 	else:
 		infoMatrix[i][44]=1
 
+	if data[i][38] == '信优贷23':
+		label[i] = 1
+	elif data[i][38] == '信薪贷25':
+		label[i] = 2
+	elif data[i][38] == '信薪贷23':
+		label[i] = 3
+	elif data[i][38] == '信优贷19':
+		label[i] = 4
+	elif data[i][38] == '信薪佳人贷21':
+		label[i] = 5
+	elif data[i][38] == '信优贷17_A':
+		label[i] = 6
+	elif data[i][38] == '信优贷21':
+		label[i] = 7
+	elif data[i][38] == '信薪贷27':
+		label[i] = 8
+	elif data[i][38] == '薪期贷17':
+		label[i] = 9
+	elif data[i][38] == '信薪贷25':
+		label[i] = 10
+	elif data[i][38] == '信薪贷25':
+		label[i] = 2
+	elif data[i][38] == '信薪贷25':
+		label[i] = 2
+	
+
 print(infoMatrix)
 
 
 
-'''numCluster = 6
+numCluster = 6
 iter = 1000
 alpha = 0.1
 
@@ -210,6 +236,5 @@ while input('end? ') != 'yes':
 				minDist = distance[i]
 				index = i
 
-	print(index)'''
-
+	print(index)
 
