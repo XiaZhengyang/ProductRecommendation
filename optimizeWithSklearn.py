@@ -88,11 +88,17 @@ print kmObject.labels_, kmObject.inertia_
 
 #Input a new client information and scale it
 newClient = np.zeros(numberOfFeatures)
-for i in range(0,numberOfFeatures):
-	newClient[i] = raw_input("Please enter the feature of newClient-->")
+newClient[0] = raw_input("Please enter the age of newClient-->")
+newClient[1] = raw_input("Please enter the gender of newClient 1 for male-->")
+newClient[2] = raw_input("Please enter the matirial status 1 for married-->")
+newClient[3] = raw_input("Please enter the education of newClient(4/2/1/0)-->")
+newClient[4] = raw_input("Please enter the monthly income of newClient in thousands-->")
+newClient[5] = raw_input("Please enter the no. of dependent(s) of newClient-->")
+newClient[6] = raw_input("Please enter the value of vehicle of newClient-->")
 newClientScaled = np.zeros(numberOfFeatures)
 for i in range(numberOfFeatures):
 	newClientScaled[i] = newClient[i]*scalingCoefficient[i]
+print newClient
 print newClientScaled
 
 #Calculate the distances of new client to the cluster-centroids
@@ -101,9 +107,15 @@ for i in range(numberOfClusters):
 	for j in range(numberOfFeatures):
 		distance[i]+=(newClientScaled[j] - kmObject.cluster_centers_[i,j])**2
 
-print distance
-print "The new client belongs to cluster number ", np.argmin(distance)
 
+
+#Post-clustering analysis
+print "The new client belongs to cluster number ", np.argmin(distance)
+print "Other people in this cluster include:"
+
+
+
+print kmObject.predict(newClientScaled.reshape(1,-1))
 
 
 
