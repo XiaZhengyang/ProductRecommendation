@@ -19,9 +19,9 @@ with open('申请客户信息.csv', encoding='gbk') as csvfile:
 		if not line in data:
 			data.append(line)
 			numSample += 1
-numFeature = 100
-infoMatrix = numpy.zeros((numSample, numFeature))
-label = numpy.zeros(13)
+numFeature = 45
+infoMatrix = numpy.zeros((numSample, numFeature), int)
+label = numpy.zeros(numSample)
 for i in range(numSample):
 	if data[i][4] == '信优贷':
 		infoMatrix[i][0] = 1
@@ -133,51 +133,50 @@ for i in range(numSample):
 	else:
 		infoMatrix[i][44]=1
 
-	if data[i][38] == '信优贷23':
+	if data[i][39] == '信优贷23':
 		label[i] = 1
-	elif data[i][38] == '信薪贷25':
+	elif data[i][39] == '信薪贷25':
 		label[i] = 2
-	elif data[i][38] == '信薪贷23':
+	elif data[i][39] == '信薪贷23':
+		label[i] = 2
+	elif data[i][39] == '信优贷19':
+		label[i] = 1
+	elif data[i][39] == '信薪佳人贷21':
 		label[i] = 3
-	elif data[i][38] == '信优贷19':
+	elif data[i][39] == '信优贷17_A':
+		label[i] = 1
+	elif data[i][39] == '信优贷21':
+		label[i] = 1
+	elif data[i][39] == '信薪贷27':
+		label[i] = 2
+	elif data[i][39] == '薪期贷17':
 		label[i] = 4
-	elif data[i][38] == '信薪佳人贷21':
+	elif data[i][39] == '薪期贷13':
+		label[i] = 4
+	elif data[i][39] == '薪期贷10':
+		label[i] = 4
+	elif data[i][39] == '薪期贷07':
+		label[i] = 4
+	else:
 		label[i] = 5
-	elif data[i][38] == '信优贷17_A':
-		label[i] = 6
-	elif data[i][38] == '信优贷21':
-		label[i] = 7
-	elif data[i][38] == '信薪贷27':
-		label[i] = 8
-	elif data[i][38] == '薪期贷17':
-		label[i] = 9
-	elif data[i][38] == '信薪贷25':
-		label[i] = 10
-	elif data[i][38] == '信薪贷25':
-		label[i] = 2
-	elif data[i][38] == '信薪贷25':
-		label[i] = 2
-	
 
-print(infoMatrix)
+#print(infoMatrix)
 
-
-
-numCluster = 6
+numCluster = 5
 iter = 1000
-alpha = 0.1
+alpha = 0.01
 
 
 stdInfoMatrix = whiten(infoMatrix)
 random.seed(version=2)
-prototype = random.sample(range(sampleNum), numCluster)
+prototype = random.sample(range(numSample), numCluster)
 centroids = stdInfoMatrix[prototype]
 ptLabel = label[prototype]
 
 def computeDistance(x,y):
 	dist = 0
 	for i in range(size(x)):
-		dist += (x[i]-y[i])*(x[i]-y[i])
+		dist += pow((x[i]-y[i]),2)
 	return dist
 
 
@@ -200,21 +199,20 @@ def far(cIndex, sIndex):
 		centroids[cIndex][i] -= alpha * (stdInfoMatrix[sIndex][i] - centroids[cIndex][i])
 
 for i in range(iter):
-	sampleIndex = random.choice(range(validSampleNum))
+	sampleIndex = random.choice(range(numSample))
 	centroidIndex = findNearestCentroid(sampleIndex)
-	if label[sampleIndex] == label[centroidIndex]:
+	if label[sampleIndex] == ptLabel[centroidIndex]:
 		close(centroidIndex, sampleIndex)
 	else:
 		far(centroidIndex, sampleIndex)
+count = 0
+for i in range(numSample):
+	if ptLabel[findNearestCentroid(i)] == label[i]:
+		count +=1
 
-print(centroids)
+print(count/numSample*100,'%')
 
-
-centroids = kmeans(stdInfoMatrix, numCluster, 500)[0]
-print(centroids)
-
-
-while input('end? ') != 'yes':
+'''while input('end? ') != 'yes':
 	newClient = numpy.zeros(numFeature, int)
 	newClient[0] = input("Age: ")
 	newClient[1] = input("Gender: ")
@@ -236,5 +234,4 @@ while input('end? ') != 'yes':
 				minDist = distance[i]
 				index = i
 
-	print(index)
-
+	print(index)'''
