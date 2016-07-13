@@ -1,4 +1,6 @@
 import csv
+import scipy
+import numpy as np
 lineList = []
 
 #Initial CSV File Reading
@@ -17,18 +19,13 @@ with open('../customerInfo-Chinese.csv',encoding='gbk') as f:
 numberOfFeatures = 7
 validSampleCount = len(lineList)
 totalNumberOfAttributes = len(lineList[0])
-infoMatrix = numpy.empty((validSampleCount,totalNumberOfAttributes),str)
-print (totalNumberOfAttributes)
-print (lineList[0][1])
-print (lineList[1][1])
-print (lineList[644][1])
+infoMatrix = np.empty((validSampleCount,totalNumberOfAttributes),str)
 for i in range(validSampleCount):
 	for j in range(totalNumberOfAttributes):
 		infoMatrix[i,j] = lineList[i][j]
 print (infoMatrix)
 
-
-
+'''
 #Scale the features to create a scaled matrix
 scaledMatrix = whiten(infoMatrix)
 scalingCoefficient = np.zeros((numberOfFeatures,1),)
@@ -40,5 +37,5 @@ for i in range(numberOfFeatures):
 print scalingCoefficient
 print scaledMatrix
 
-
+'''
 
