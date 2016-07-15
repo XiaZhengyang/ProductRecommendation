@@ -1,6 +1,6 @@
 import csv
 import random
-import numpy
+import numpy as np
 import scipy 
 from scipy.cluster.vq import kmeans
 from scipy.cluster.vq import whiten
@@ -8,9 +8,13 @@ from scipy.cluster.vq import kmeans2
 from scipy.optimize import minimize
 from numpy import size
 import numpy.matlib
-numpy.set_printoptions(precision=1,threshold=1000000)
+from sklearn.cluster import KMeans
+np.set_printoptions(precision=1,threshold=1000000)
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn import svm
+from sklearn.ensemble import RandomForestClassifier
 
-with open('申请客户信息.csv', encoding='gbk') as csvfile:
+with open('../申请客户信息.csv', encoding='gbk') as csvfile:
 	reader = csv.reader(csvfile, delimiter=',', quotechar='"')
 	next(reader)
 	data = []
@@ -21,7 +25,7 @@ with open('申请客户信息.csv', encoding='gbk') as csvfile:
 			numSample += 1
 numFeature = 100
 infoMatrix = numpy.zeros((numSample, numFeature))
-label = numpy.zeros(13)
+label = numpy.zeros((numSample),int)
 for i in range(numSample):
 	if data[i][4] == '信优贷':
 		infoMatrix[i][0] = 1
@@ -117,9 +121,9 @@ for i in range(numSample):
 		infoMatrix[i][37]=1
 
 
-	#38-44	Type of working unit
+	#39-44	Type of working unit
 	if data[i][32]=='机关事业单位':
-		infoMatrix[i][38]=1
+		infoMatrix[i][39]=1
 	elif data[i][32]=='外资企业':
 		infoMatrix[i][39]=1
 	elif data[i][32]=='私营企业':
@@ -133,36 +137,105 @@ for i in range(numSample):
 	else:
 		infoMatrix[i][44]=1
 
-	if data[i][38] == '信优贷23':
+	if data[i][39] == '信优贷23':
 		label[i] = 1
-	elif data[i][38] == '信薪贷25':
+	elif data[i][39] == '信薪贷25':
 		label[i] = 2
-	elif data[i][38] == '信薪贷23':
+	elif data[i][39] == '信薪贷23':
+		label[i] = 2
+	elif data[i][39] == '信优贷19':
+		label[i] = 1
+	elif data[i][39] == '信薪佳人贷21':
 		label[i] = 3
-	elif data[i][38] == '信优贷19':
+	elif data[i][39] == '信优贷17_A11':
+		label[i] = 1
+	elif data[i][39] == '信优贷21':
+		label[i] = 1
+	elif data[i][39] == '信薪贷27':
+		label[i] = 2
+	elif data[i][39] == '薪期贷17':
 		label[i] = 4
-	elif data[i][38] == '信薪佳人贷21':
-		label[i] = 5
-	elif data[i][38] == '信优贷17_A':
-		label[i] = 6
-	elif data[i][38] == '信优贷21':
-		label[i] = 7
-	elif data[i][38] == '信薪贷27':
-		label[i] = 8
-	elif data[i][38] == '薪期贷17':
-		label[i] = 9
-	elif data[i][38] == '信薪贷25':
-		label[i] = 10
-	elif data[i][38] == '信薪贷25':
-		label[i] = 2
-	elif data[i][38] == '信薪贷25':
-		label[i] = 2
+	elif data[i][39] == '薪期贷13':
+		label[i] = 4
+	elif data[i][39] == '薪期贷10':
+		label[i] = 4
+	elif data[i][39] == '薪期贷07':
+		label[i] = 4
+	else:
+		label[i]=5
 	
 
-print(infoMatrix)
+#print(infoMatrix)
+#print (label)
 
 
 
+#K-Nearest Neighbors classification
+kneighborObject = KNeighborsClassifier(5)
+kneighborObject.fit(infoMatrix[321:numSample,:],label[321:numSample])
+correctPredictions = 0
+for i in range(0,321):
+	if  (kneighborObject.predict(infoMatrix[i:i+1,:])==label[i]):
+		correctPredictions+=1
+print ('The training accuracy from KNN classification algorithm is: ', (correctPredictions/(321))*100, '%')
+
+
+#Support vector machine classification
+svmObject = svm.SVC()
+svmObject.fit(infoMatrix[321:numSample,:],label[321:numSample])
+correctPredictionsSvm = 0
+for i in range(321):
+	if (svmObject.predict(infoMatrix[i:i+1,:]) == label[i]):
+		correctPredictionsSvm +=1
+print ('The training accuracy from SVM classification algorithm is: ', 100*correctPredictionsSvm/(321), '%')
+
+
+
+#Random forest classification
+rfObject = RandomForestClassifier()
+rfObject.fit(infoMatrix[0:321,:],label[0:321])
+correctPredictionsRf = 0
+for i in range(321,numSample):
+	if (rfObject.predict(infoMatrix[i:i+1,:])==label[i]):
+		correctPredictionsRf +=1
+print ('The training accuracy from Random Forest classification algorithm is: ', 100*correctPredictionsRf/(numSample- 321), '%')
+
+
+
+
+'''
+scaledMatrix = whiten(infoMatrix)
+scalingCoefficient = np.zeros((numFeature,1),)
+for i in range(numFeature):
+	j =0 			#traverse all training examples until a non-zero number if found
+	while (infoMatrix[j,i]==0):
+		j=j+1
+	scalingCoefficient[i] = scaledMatrix[j,i]/infoMatrix[j,i]	
+#print (scalingCoefficient)
+#print (scaledMatrix)
+
+
+#Perform optimization
+kmObject = KMeans(12,n_init=200)
+kmObject.fit(scaledMatrix)
+print (kmObject.labels_, kmObject.inertia_)'''
+
+
+
+
+
+
+
+
+
+
+
+
+'''sampleNum = size(data["clients"])
+infoMatrix = numpy.zeros((sampleNum,7), float)
+validSampleNum = 0
+numFeature = 7
+>>>>>>> Stashed changes
 numCluster = 6
 iter = 1000
 alpha = 0.1
@@ -238,3 +311,4 @@ while input('end? ') != 'yes':
 
 	print(index)
 
+'''
