@@ -15,7 +15,9 @@ from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.naive_bayes import BernoulliNB
+from sklearn.naive_bayes import BernoulliNB 
+from sklearn.preprocessing import Imputer
+from sklearn.preprocessing import OneHotEncoder
 
 with open('../申请客户信息.csv', encoding='gbk') as csvfile:
 	reader = csv.reader(csvfile, delimiter=',', quotechar='"')
@@ -26,137 +28,267 @@ with open('../申请客户信息.csv', encoding='gbk') as csvfile:
 		if not line in data:
 			data.append(line)
 			numSample += 1
-numFeature = 45
-infoMatrix = numpy.zeros((numSample, numFeature))
-label = numpy.zeros((numSample),int)
+
+
+infoMatrix = np.zeros((numSample, 0),)
+label = np.zeros((numSample))
+catagoricalColumns = []
+numericalColumns = []
 
 
 for i in range(numSample):
-	#0-3. Type applied
+	#0. Type applied
+	validColumnsCount = 0
+	if i==0:
+		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
+		tempMatrix[:,:-1] = infoMatrix
+		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
+		infoMatrix = tempMatrix
+		catagoricalColumns.append(validColumnsCount)
 	if data[i][4] == '信优贷':
-		infoMatrix[i][0] = 1
+		infoMatrix[i][validColumnsCount] = 0
 	elif data[i][4] == '信薪贷':
-		infoMatrix[i][1] = 1
+		infoMatrix[i][validColumnsCount] = 1
 	elif data[i][4] == '信薪佳人贷':
-		infoMatrix[i][2] = 1
-	else:#Exceptions: Xinqidai & one instance of Luxinyou
-		infoMatrix[i][3] = 1
+		infoMatrix[i][validColumnsCount] = 2
+	elif data[i][4] == '薪期贷':
+		infoMatrix[i][validColumnsCount] = 3
+	else:
+		infoMatrix[i][validColumnsCount] = np.nan
+	validColumnsCount+=1
 	
-	#4-6. Duration applied
+	#1. Duration applied
+	if i==0:
+		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
+		tempMatrix[:,:-1] = infoMatrix
+		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
+		infoMatrix = tempMatrix
+		catagoricalColumns.append(validColumnsCount)
 	if data[i][5] == '24':
-		infoMatrix[i][4] = 1
+		infoMatrix[i][validColumnsCount] = 0
+	elif data[i][5] == '36':
+		infoMatrix[i][validColumnsCount] = 1
 	elif data[i][5] == '48':
-		infoMatrix[i][5] = 1
+		infoMatrix[i][validColumnsCount] = 2
 	else:
-		infoMatrix[i][6] = 1
+		infoMatrix[i][validColumnsCount] = np.nan
+	validColumnsCount+=1
 	
-	#7.Amount applied
-	infoMatrix[i][7] = float(data[i][6])
+
+	#2.Amount applied
+	if i==0:
+		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
+		tempMatrix[:,:-1] = infoMatrix
+		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
+		infoMatrix = tempMatrix
+		numericalColumns.append(validColumnsCount)
+	try:
+		infoMatrix[i][validColumnsCount] = float(data[i][6])
+	except:
+		infoMatrix[i][validColumnsCount] = np.nan
+	validColumnsCount+=1
 
 
-	#8-11. Purpose of lending
+	#3. Purpose of lending
+	if i==0:
+		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
+		tempMatrix[:,:-1] = infoMatrix
+		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
+		infoMatrix = tempMatrix
+		catagoricalColumns.append(validColumnsCount)
 	if data[i][7] == '消费':
-		infoMatrix[i][8] = 1
+		infoMatrix[i][validColumnsCount] = 0
 	elif data[i][7] == '经营周转':
-		infoMatrix[i][9] = 1
+		infoMatrix[i][validColumnsCount] = 1
 	elif data[i][7] == '个人资金周转':
-		infoMatrix[i][10] = 1
-	else:#Exceptions: Else
-		infoMatrix[i][11] = 1
+		infoMatrix[i][validColumnsCount] = 2
+	elif data[i][7] == '其他':
+		infoMatrix[i][validColumnsCount] = 3
+	else:
+		infoMatrix[i][validColumnsCount] = np.nan
+	validColumnsCount+=1
 	
-	#12.Maximun acceptable monthly payment
+	#4.Maximun acceptable monthly payment
+	if i==0:
+		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
+		tempMatrix[:,:-1] = infoMatrix
+		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
+		infoMatrix = tempMatrix
+		numericalColumns.append(validColumnsCount)
 	try:
-		infoMatrix[i][12] = float(data[i][8])
+		infoMatrix[i][validColumnsCount] = float(data[i][8])
 	except:
-		infoMatrix[i][12] = 0
+		infoMatrix[i][validColumnsCount] = np.nan
+	validColumnsCount+=1
 	
-	#13. Whether family members knew
+	#5. Whether family members knew
+	if i==0:
+		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
+		tempMatrix[:,:-1] = infoMatrix
+		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
+		infoMatrix = tempMatrix	
+		catagoricalColumns.append(validColumnsCount)
 	if data[i][9] == '是':
-		infoMatrix[i][13] = 1
+		infoMatrix[i][validColumnsCount] = 1
+	elif data[i][9] == '否':
+		infoMatrix[i][validColumnsCount] = 0
+	else:
+		infoMatrix[i][validColumnsCount] = np.nan
+	validColumnsCount+=1
 
-	#14-21. Type of residence
+	#6. Type of residence
+	if i==0:
+		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
+		tempMatrix[:,:-1] = infoMatrix
+		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
+		infoMatrix = tempMatrix
+		catagoricalColumns.append(validColumnsCount)
 	if data[i][17] == '无按揭购房':
-		infoMatrix[i][14] = 1
+		infoMatrix[i][validColumnsCount] = 1
 	elif data[i][17] == '商业按揭房':
-		infoMatrix[i][15] = 1
+		infoMatrix[i][validColumnsCount] = 2
 	elif data[i][17] == '公积金按揭购房':
-		infoMatrix[i][16] = 1
+		infoMatrix[i][validColumnsCount] = 3
 	elif data[i][17] == '自建房':
-		infoMatrix[i][17] = 1
+		infoMatrix[i][validColumnsCount] = 4
 	elif data[i][17] == '单位住房':
-		infoMatrix[i][18] = 1
+		infoMatrix[i][validColumnsCount] = 5
 	elif data[i][17] == '亲属住房':
-		infoMatrix[i][19] = 1
+		infoMatrix[i][validColumnsCount] = 6
+	elif data[i][17] == '租用':
+		infoMatrix[i][validColumnsCount] = 0
 	else:
-		infoMatrix[i][20] = 1
+		infoMatrix[i][validColumnsCount] = np.nan
+	validColumnsCount+=1
 
-	#22.Time lived in city
+	#7.Time lived in city
+	if i==0:
+		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
+		tempMatrix[:,:-1] = infoMatrix
+		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
+		infoMatrix = tempMatrix
+		numericalColumns.append(validColumnsCount)
 	try:
-		infoMatrix[i][21] = float(data[i][18])
+		infoMatrix[i][validColumnsCount] = float(data[i][18])
 	except:
-		infoMatrix[i][21] = 0
+		infoMatrix[i][validColumnsCount] = np.nan
+	validColumnsCount+=1
 
-	#22-26.Education background columns
+	#8.Education background columns
+	if i==0:
+		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
+		tempMatrix[:,:-1] = infoMatrix
+		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
+		infoMatrix = tempMatrix	
+		catagoricalColumns.append(validColumnsCount)
 	if data[i][19]=='大学本科':
-		infoMatrix[i][22] = 1
+		infoMatrix[i][validColumnsCount] = 0
 	elif data[i][19]=='高中及中专':
-		infoMatrix[i][23] = 1
+		infoMatrix[i][validColumnsCount] = 1
 	elif data[i][19]=='大专':
-		infoMatrix[i][24] = 1
+		infoMatrix[i][validColumnsCount] = 2
 	elif data[i][19]=='硕士':
-		infoMatrix[i][25]=1
+		infoMatrix[i][validColumnsCount] = 3
+	elif data[i][19] =='初中及以下':
+		infoMatrix[i][validColumnsCount] = 4
 	else:
-		infoMatrix[26] = 1
+		infoMatrix[i][validColumnsCount] = np.nan
+	validColumnsCount+=1
 
-	#27-29Maritial status
+	#9Maritial status
+	if i==0:
+		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
+		tempMatrix[:,:-1] = infoMatrix
+		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
+		infoMatrix = tempMatrix
+		catagoricalColumns.append(validColumnsCount)
 	if data[i][21]=='已婚':
-		infoMatrix[i][27]=1
+		infoMatrix[i][validColumnsCount]=0
 	elif data[i][21]=='未婚':
-		infoMatrix[i][28]=1
+		infoMatrix[i][validColumnsCount]=1
+	elif data[i][21] == '离异':
+		infoMatrix[i][validColumnsCount]=2
 	else:
-		infoMatrix[i][29]=1
+		infoMatrix[i][validColumnsCount]= np.nan
+	validColumnsCount+=1
 
-	#30.Gender 
+	#10.Gender 
+	if i==0:
+		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
+		tempMatrix[:,:-1] = infoMatrix
+		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
+		infoMatrix = tempMatrix
+		catagoricalColumns.append(validColumnsCount)
 	if data[i][22]=='男':
-		infoMatrix[i][30]=1
+		infoMatrix[i][validColumnsCount]= 1
+	elif data[i][22] == '女':
+		infoMatrix[i][validColumnsCount] = 0
+	else:
+		infoMatrix[i][validColumnsCount] = np.nan
+	validColumnsCount+=1
 
-	#31Value of vehicle
+	#11Value of vehicle
+	if i==0:
+		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
+		tempMatrix[:,:-1] = infoMatrix
+		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
+		infoMatrix = tempMatrix	
+		numericalColumns.append(validColumnsCount)
 	if data[i][25]=='':
-		infoMatrix[i][31]=0
+		infoMatrix[i][validColumnsCount]=0
 	else:
-		infoMatrix[i][31]=float(data[i][25])
+		infoMatrix[i][validColumnsCount]=float(data[i][25])
+	validColumnsCount+=1
 
 
-	#32-37Job and working company
-	if data[i][31]=='一般正式员工':
-		infoMatrix[i][32]=1
-	elif data[i][31]=='中级管理人员':
-		infoMatrix[i][33]=1
-	elif data[i][31]=='一般管理人员':
-		infoMatrix[i][34]=1
-	elif data[i][31]=='派遣员工':
-		infoMatrix[i][35]=1
-	elif data[i][31]=='高级管理人员':
-		infoMatrix[i][36]=1
+	#12.Job and working company
+	if i==0:
+		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
+		tempMatrix[:,:-1] = infoMatrix
+		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
+		infoMatrix = tempMatrix	
+		catagoricalColumns.append(validColumnsCount)
+	if data[i][32]=='一般正式员工':
+		infoMatrix[i][validColumnsCount]=0
+	elif data[i][32]=='中级管理人员':
+		infoMatrix[i][validColumnsCount]=1
+	elif data[i][32]=='一般管理人员':
+		infoMatrix[i][validColumnsCount]=2
+	elif data[i][32]=='派遣员工':
+		infoMatrix[i][validColumnsCount]=3
+	elif data[i][32]=='高级管理人员':
+		infoMatrix[i][validColumnsCount]=4
+	elif data[i][32] == '负责人':
+		infoMatrix[i][validColumnsCount]=5
 	else:
-		infoMatrix[i][37]=1
+		infoMatrix[i][validColumnsCount]= np.nan
+	validColumnsCount+=1
 
 
-	#39-44	Type of working unit
-	if data[i][32]=='机关事业单位':
-		infoMatrix[i][39]=1
-	elif data[i][32]=='外资企业':
-		infoMatrix[i][39]=1
-	elif data[i][32]=='私营企业':
-		infoMatrix[i][40]=1
-	elif data[i][32]=='国有股份':
-		infoMatrix[i][41]=1
-	elif data[i][32]=='合资企业':
-		infoMatrix[i][42]=1
-	elif data[i][32]=='民营企业':
-		infoMatrix[i][43]=1
+	#13	Type of working unit
+	if i==0:
+		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
+		tempMatrix[:,:-1] = infoMatrix
+		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
+		infoMatrix = tempMatrix	
+		catagoricalColumns.append(validColumnsCount)
+	if data[i][33]=='机关事业单位':
+		infoMatrix[i][validColumnsCount]=0
+	elif data[i][33]=='外资企业':
+		infoMatrix[i][validColumnsCount]=1
+	elif data[i][33]=='私营企业':
+		infoMatrix[i][validColumnsCount]=2
+	elif data[i][33]=='国有股份':
+		infoMatrix[i][validColumnsCount]=3
+	elif data[i][33]=='合资企业':
+		infoMatrix[i][validColumnsCount]=4
+	elif data[i][33]=='民营企业':
+		infoMatrix[i][validColumnsCount]=5
+	elif data[i][33] =='个体':
+		infoMatrix[i][validColumnsCount]=6
 	else:
-		infoMatrix[i][44]=1
+		infoMatrix[i][validColumnsCount]= np.nan
+	validColumnsCount+=1
 
 	if data[i][39] == '信优贷23':
 		label[i] = 1
@@ -175,19 +307,44 @@ for i in range(numSample):
 	elif data[i][39] == '信薪贷27':
 		label[i] = 2
 	elif data[i][39] == '薪期贷17':
-		label[i] = 4
+		label[i] = 0
 	elif data[i][39] == '薪期贷13':
-		label[i] = 4
+		label[i] = 0
 	elif data[i][39] == '薪期贷10':
-		label[i] = 4
+		label[i] = 0
 	elif data[i][39] == '薪期贷07':
-		label[i] = 4
+		label[i] = 0
 	else:
-		label[i]=5
+		label[i] = np.nan
 	
 
-#print(infoMatrix)
-#print (label)
+
+
+
+
+#===Data imputation to be added below here===
+
+#Impute catagorical data
+imputerObjectFrequency = Imputer(missing_values='NaN', strategy='most_frequent',)
+for i in catagoricalColumns:
+	infoMatrix[:,i:i+1] = imputerObjectFrequency.fit_transform(infoMatrix[:,i:i+1])
+
+#Impute numerical data
+imputerObjectMean = Imputer(missing_values='NaN', strategy='mean')
+for i in numericalColumns:
+	infoMatrix[:,i:i+1] = imputerObjectMean.fit_transform(infoMatrix[:,i:i+1])
+
+
+
+
+#Perform one-hot encoding
+encodingObject = OneHotEncoder(categorical_features = catagoricalColumns, sparse=False)
+infoMatrix = encodingObject.fit_transform(infoMatrix)
+print (infoMatrix)
+
+
+
+
 scaledMatrix = whiten(infoMatrix)
 
 
