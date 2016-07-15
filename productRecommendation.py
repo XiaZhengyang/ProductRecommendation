@@ -26,250 +26,137 @@ with open('../申请客户信息.csv', encoding='gbk') as csvfile:
 		if not line in data:
 			data.append(line)
 			numSample += 1
-
-
-infoMatrix = np.zeros((numSample, 0))
-label = np.zeros((numSample),int)
-
+numFeature = 45
+infoMatrix = numpy.zeros((numSample, numFeature))
+label = numpy.zeros((numSample),int)
 
 
 for i in range(numSample):
-	#0. Type applied
-	validColumnsCount = 0
-	if i==0:
-		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
-		tempMatrix[:,:-1] = infoMatrix
-		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
-		infoMatrix = tempMatrix
+	#0-3. Type applied
 	if data[i][4] == '信优贷':
-		infoMatrix[i][validColumnsCount] = 0
+		infoMatrix[i][0] = 1
 	elif data[i][4] == '信薪贷':
-		infoMatrix[i][validColumnsCount] = 1
+		infoMatrix[i][1] = 1
 	elif data[i][4] == '信薪佳人贷':
-		infoMatrix[i][validColumnsCount] = 2
-	elif data[i][4] == '薪期贷':
-		infoMatrix[i][validColumnsCount] = 3
-	else:
-		infoMatrix[i][validColumnsCount] = -1
-	validColumnsCount+=1
+		infoMatrix[i][2] = 1
+	else:#Exceptions: Xinqidai & one instance of Luxinyou
+		infoMatrix[i][3] = 1
 	
-	#1. Duration applied
-	if i==0:
-		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
-		tempMatrix[:,:-1] = infoMatrix
-		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
-		infoMatrix = tempMatrix
+	#4-6. Duration applied
 	if data[i][5] == '24':
-		infoMatrix[i][validColumnsCount] = 0
-	elif data[i][5] == '36':
-		infoMatrix[i][validColumnsCount] = 1
-	elif data[i][6] == '48':
-		infoMatrix[i][validColumnsCount] = 2
+		infoMatrix[i][4] = 1
+	elif data[i][5] == '48':
+		infoMatrix[i][5] = 1
 	else:
-		infoMatrix[i][validColumnsCount] = -1
-	validColumnsCount+=1
+		infoMatrix[i][6] = 1
 	
-
-	#2.Amount applied
-	if i==0:
-		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
-		tempMatrix[:,:-1] = infoMatrix
-		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
-		infoMatrix = tempMatrix
-	try:
-		infoMatrix[i][validColumnsCount] = float(data[i][6])
-	except:
-		infoMatrix[i][validColumnsCount] = -1
-	validColumnsCount+=1
+	#7.Amount applied
+	infoMatrix[i][7] = float(data[i][6])
 
 
-	#3. Purpose of lending
-	if i==0:
-		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
-		tempMatrix[:,:-1] = infoMatrix
-		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
-		infoMatrix = tempMatrix
+	#8-11. Purpose of lending
 	if data[i][7] == '消费':
-		infoMatrix[i][validColumnsCount] = 0
+		infoMatrix[i][8] = 1
 	elif data[i][7] == '经营周转':
-		infoMatrix[i][validColumnsCount] = 1
+		infoMatrix[i][9] = 1
 	elif data[i][7] == '个人资金周转':
-		infoMatrix[i][validColumnsCount] = 2
-	elif data[i][7] == '其他':
-		infoMatrix[i][validColumnsCount] = 3
-	else:
-		infoMatrix[i][validColumnsCount] = -1
-	validColumnsCount+=1
+		infoMatrix[i][10] = 1
+	else:#Exceptions: Else
+		infoMatrix[i][11] = 1
 	
-	#4.Maximun acceptable monthly payment
-	if i==0:
-		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
-		tempMatrix[:,:-1] = infoMatrix
-		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
-		infoMatrix = tempMatrix
+	#12.Maximun acceptable monthly payment
 	try:
-		infoMatrix[i][validColumnsCount] = float(data[i][8])
+		infoMatrix[i][12] = float(data[i][8])
 	except:
-		infoMatrix[i][validColumnsCount] = -1
-	validColumnsCount+=1
+		infoMatrix[i][12] = 0
 	
-	#5. Whether family members knew
-	if i==0:
-		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
-		tempMatrix[:,:-1] = infoMatrix
-		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
-		infoMatrix = tempMatrix	
+	#13. Whether family members knew
 	if data[i][9] == '是':
-		infoMatrix[i][validColumnsCount] = 1
-	elif data[i][9] == '否':
-		infoMatrix[i][validColumnsCount] = 0
-	else:
-		infoMatrix[i][validColumnsCount] = -1
-	validColumnsCount+=1
+		infoMatrix[i][13] = 1
 
-	#6. Type of residence
-	if i==0:
-		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
-		tempMatrix[:,:-1] = infoMatrix
-		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
-		infoMatrix = tempMatrix
+	#14-21. Type of residence
 	if data[i][17] == '无按揭购房':
-		infoMatrix[i][validColumnsCount] = 1
+		infoMatrix[i][14] = 1
 	elif data[i][17] == '商业按揭房':
-		infoMatrix[i][validColumnsCount] = 2
+		infoMatrix[i][15] = 1
 	elif data[i][17] == '公积金按揭购房':
-		infoMatrix[i][validColumnsCount] = 3
+		infoMatrix[i][16] = 1
 	elif data[i][17] == '自建房':
-		infoMatrix[i][validColumnsCount] = 4
+		infoMatrix[i][17] = 1
 	elif data[i][17] == '单位住房':
-		infoMatrix[i][validColumnsCount] = 5
+		infoMatrix[i][18] = 1
 	elif data[i][17] == '亲属住房':
-		infoMatrix[i][validColumnsCount] = 6
-	elif data[i][17] == '租用':
-		infoMatrix[i][validColumnsCount] = 0
+		infoMatrix[i][19] = 1
 	else:
-		infoMatrix[i][validColumnsCount] = -1
-	validColumnsCount+=1
+		infoMatrix[i][20] = 1
 
-	#7.Time lived in city
-	if i==0:
-		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
-		tempMatrix[:,:-1] = infoMatrix
-		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
-		infoMatrix = tempMatrix
+	#22.Time lived in city
 	try:
-		infoMatrix[i][validColumnsCount] = float(data[i][18])
+		infoMatrix[i][21] = float(data[i][18])
 	except:
-		infoMatrix[i][validColumnsCount] = -1
-	validColumnsCount+=1
+		infoMatrix[i][21] = 0
 
-	#8.Education background columns
-	if i==0:
-		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
-		tempMatrix[:,:-1] = infoMatrix
-		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
-		infoMatrix = tempMatrix	
+	#22-26.Education background columns
 	if data[i][19]=='大学本科':
-		infoMatrix[i][validColumnsCount] = 0
+		infoMatrix[i][22] = 1
 	elif data[i][19]=='高中及中专':
-		infoMatrix[i][validColumnsCount] = 1
+		infoMatrix[i][23] = 1
 	elif data[i][19]=='大专':
-		infoMatrix[i][validColumnsCount] = 2
+		infoMatrix[i][24] = 1
 	elif data[i][19]=='硕士':
-		infoMatrix[i][validColumnsCount] = 3
-	elif data[i][19] =='初中及以下':
-		infoMatrix[i][validColumnsCount] = 4
+		infoMatrix[i][25]=1
 	else:
-		infoMatrix[i][validColumnsCount] = -1
-	validColumnsCount+=1
+		infoMatrix[26] = 1
 
-	#9Maritial status
-	if i==0:
-		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
-		tempMatrix[:,:-1] = infoMatrix
-		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
-		infoMatrix = tempMatrix
+	#27-29Maritial status
 	if data[i][21]=='已婚':
-		infoMatrix[i][validColumnsCount]=1
+		infoMatrix[i][27]=1
 	elif data[i][21]=='未婚':
-		infoMatrix[i][validColumnsCount]=1
+		infoMatrix[i][28]=1
 	else:
-		infoMatrix[i][validColumnsCount]=-1
-	validColumnsCount+=1
+		infoMatrix[i][29]=1
 
-	#10.Gender 
-	if i==0:
-		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
-		tempMatrix[:,:-1] = infoMatrix
-		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
-		infoMatrix = tempMatrix
+	#30.Gender 
 	if data[i][22]=='男':
-		infoMatrix[i][validColumnsCount]= 1
-	elif data[i][22] == '女':
-		infoMatrix[i][validColumnsCount] = 0
-	else:
-		infoMatrix[i][validColumnsCount] = -1
-	validColumnsCount+=1
+		infoMatrix[i][30]=1
 
-	#11Value of vehicle
-	if i==0:
-		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
-		tempMatrix[:,:-1] = infoMatrix
-		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
-		infoMatrix = tempMatrix	
+	#31Value of vehicle
 	if data[i][25]=='':
-		infoMatrix[i][validColumnsCount]=0
+		infoMatrix[i][31]=0
 	else:
-		infoMatrix[i][validColumnsCount]=float(data[i][25])
-	validColumnsCount+=1
+		infoMatrix[i][31]=float(data[i][25])
 
 
-	#12.Job and working company
-	if i==0:
-		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
-		tempMatrix[:,:-1] = infoMatrix
-		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
-		infoMatrix = tempMatrix	
-	if data[i][31]=='一般正式员工':
-		infoMatrix[i][validColumnsCount]=0
-	elif data[i][31]=='中级管理人员':
-		infoMatrix[i][validColumnsCount]=1
-	elif data[i][31]=='一般管理人员':
-		infoMatrix[i][validColumnsCount]=2
-	elif data[i][31]=='派遣员工':
-		infoMatrix[i][validColumnsCount]=3
-	elif data[i][31]=='高级管理人员':
-		infoMatrix[i][validColumnsCount]=4
-	elif data[i][31] == '负责人':
-		infoMatrix[i][validColumnsCount]=5
+	#32-37Job and working company
+	if data[i][32]=='一般正式员工':
+		infoMatrix[i][32]=1
+	elif data[i][32]=='中级管理人员':
+		infoMatrix[i][33]=1
+	elif data[i][32]=='一般管理人员':
+		infoMatrix[i][34]=1
+	elif data[i][32]=='派遣员工':
+		infoMatrix[i][35]=1
+	elif data[i][32]=='高级管理人员':
+		infoMatrix[i][36]=1
 	else:
-		infoMatrix[i][validColumnsCount]=-1
-	validColumnsCount+=1
+		infoMatrix[i][37]=1
 
 
-	#13	Type of working unit
-	if i==0:
-		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
-		tempMatrix[:,:-1] = infoMatrix
-		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
-		infoMatrix = tempMatrix	
-	if data[i][32]=='机关事业单位':
-		infoMatrix[i][validColumnsCount]=0
-	elif data[i][32]=='外资企业':
-		infoMatrix[i][validColumnsCount]=1
-	elif data[i][32]=='私营企业':
-		infoMatrix[i][validColumnsCount]=2
-	elif data[i][32]=='国有股份':
-		infoMatrix[i][validColumnsCount]=3
-	elif data[i][32]=='合资企业':
-		infoMatrix[i][validColumnsCount]=4
-	elif data[i][32]=='民营企业':
-		infoMatrix[i][validColumnsCount]=5
-	elif data[i][32] =='个体':
-		infoMatrix[i][validColumnsCount]=6
+	#39-44	Type of working unit
+	if data[i][33]=='机关事业单位':
+		infoMatrix[i][39]=1
+	elif data[i][33]=='外资企业':
+		infoMatrix[i][39]=1
+	elif data[i][33]=='私营企业':
+		infoMatrix[i][40]=1
+	elif data[i][33]=='国有股份':
+		infoMatrix[i][41]=1
+	elif data[i][33]=='合资企业':
+		infoMatrix[i][42]=1
+	elif data[i][33]=='民营企业':
+		infoMatrix[i][43]=1
 	else:
-		infoMatrix[i][validColumnsCount]=-1
-	validColumnsCount+=1
+		infoMatrix[i][44]=1
 
 	if data[i][39] == '信优贷23':
 		label[i] = 1
@@ -299,12 +186,9 @@ for i in range(numSample):
 		label[i]=5
 	
 
-
-#===Data imputation to be added below here===
-
-print(infoMatrix)
-print (label)
-'''scaledMatrix = whiten(infoMatrix)
+#print(infoMatrix)
+#print (label)
+scaledMatrix = whiten(infoMatrix)
 
 
 
@@ -354,115 +238,4 @@ print ('Similarity between naive bayes and SVM is: ', 100*sameWithSvmCount/(numS
 
 
 
-print ('==End of program==')'''
-
-
-'''
-scaledMatrix = whiten(infoMatrix)
-scalingCoefficient = np.zeros((numFeature,1),)
-for i in range(numFeature):
-	j =0 			#traverse all training examples until a non-zero number if found
-	while (infoMatrix[j,i]==0):
-		j=j+1
-	scalingCoefficient[i] = scaledMatrix[j,i]/infoMatrix[j,i]	
-#print (scalingCoefficient)
-#print (scaledMatrix)
-
-
-#Perform optimization
-kmObject = KMeans(12,n_init=200)
-kmObject.fit(scaledMatrix)
-print (kmObject.labels_, kmObject.inertia_)'''
-
-
-
-
-
-
-
-
-
-
-
-
-'''sampleNum = size(data["clients"])
-infoMatrix = numpy.zeros((sampleNum,7), float)
-validSampleNum = 0
-numFeature = 7
->>>>>>> Stashed changes
-numCluster = 6
-iter = 1000
-alpha = 0.1
-
-
-stdInfoMatrix = whiten(infoMatrix)
-random.seed(version=2)
-prototype = random.sample(range(sampleNum), numCluster)
-centroids = stdInfoMatrix[prototype]
-ptLabel = label[prototype]
-
-def computeDistance(x,y):
-	dist = 0
-	for i in range(size(x)):
-		dist += (x[i]-y[i])*(x[i]-y[i])
-	return dist
-
-
-def findNearestCentroid(index):
-	minDist = computeDistance(stdInfoMatrix[index], centroids[0])
-	minIndex = 0
-	for i in range(numCluster):
-		tempDist = computeDistance(stdInfoMatrix[index], centroids[i])
-		if tempDist < minDist:
-			minDist = tempDist
-			minIndex = i
-	return minIndex
-
-def close(cIndex, sIndex):
-	for i in range(numFeature):
-		centroids[cIndex][i] += alpha * (stdInfoMatrix[sIndex][i] - centroids[cIndex][i])
-
-def far(cIndex, sIndex):
-	for i in range(numFeature):
-		centroids[cIndex][i] -= alpha * (stdInfoMatrix[sIndex][i] - centroids[cIndex][i])
-
-for i in range(iter):
-	sampleIndex = random.choice(range(validSampleNum))
-	centroidIndex = findNearestCentroid(sampleIndex)
-	if label[sampleIndex] == label[centroidIndex]:
-		close(centroidIndex, sampleIndex)
-	else:
-		far(centroidIndex, sampleIndex)
-
-print(centroids)
-
-
-centroids = kmeans(stdInfoMatrix, numCluster, 500)[0]
-print(centroids)
-
-
-while input('end? ') != 'yes':
-	newClient = numpy.zeros(numFeature, int)
-	newClient[0] = input("Age: ")
-	newClient[1] = input("Gender: ")
-	newClient[2] = input("Married: ")
-	newClient[3] = input("Education: ")
-	newClient[4] = input("Net Income: ")
-	newClient[5] = input("Dependent: ")
-	newClient[6] = input("Vehicle: ")
-
-	distance = numpy.zeros(numCluster, float)
-	for i in range(4):
-		for j in range(numFeature):
-			distance[i] += abs(newClient[j] - centroids[i][j])
-		if i == 0:
-			minDist = distance[i]
-			index = i
-		else:
-			if distance[i] < minDist:
-				minDist = distance[i]
-				index = i
-
-	print(index)
-
-'''
+print ('==End of program==')
