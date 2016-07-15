@@ -13,6 +13,9 @@ np.set_printoptions(precision=1,threshold=1000000)
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.naive_bayes import BernoulliNB
 
 with open('../申请客户信息.csv', encoding='gbk') as csvfile:
 	reader = csv.reader(csvfile, delimiter=',', quotechar='"')
@@ -23,44 +26,60 @@ with open('../申请客户信息.csv', encoding='gbk') as csvfile:
 		if not line in data:
 			data.append(line)
 			numSample += 1
-numFeature = 100
+numFeature = 45
 infoMatrix = numpy.zeros((numSample, numFeature))
 label = numpy.zeros((numSample),int)
+
+
 for i in range(numSample):
+	#0-3. Type applied
 	if data[i][4] == '信优贷':
 		infoMatrix[i][0] = 1
 	elif data[i][4] == '信薪贷':
 		infoMatrix[i][1] = 1
 	elif data[i][4] == '信薪佳人贷':
 		infoMatrix[i][2] = 1
-	else:
+	else:#Exceptions: Xinqidai & one instance of Luxinyou
 		infoMatrix[i][3] = 1
-	if data[i][5] == 24:
+	
+	#4-6. Duration applied
+	if data[i][5] == '24':
 		infoMatrix[i][4] = 1
-	elif data[i][5] == 48:
-		infoMatrix[i][7] = 1
+	elif data[i][5] == '48':
+		infoMatrix[i][5] = 1
 	else:
 		infoMatrix[i][6] = 1
-	infoMatrix[i][8] = data[i][6]
+	
+	#7.Amount applied
+	infoMatrix[i][7] = float(data[i][6])
+
+
+	#8-11. Purpose of lending
 	if data[i][7] == '消费':
 		infoMatrix[i][8] = 1
 	elif data[i][7] == '经营周转':
 		infoMatrix[i][9] = 1
 	elif data[i][7] == '个人资金周转':
 		infoMatrix[i][10] = 1
-	else:
+	else:#Exceptions: Else
 		infoMatrix[i][11] = 1
+	
+	#12.Maximun acceptable monthly payment
 	try:
 		infoMatrix[i][12] = float(data[i][8])
 	except:
 		infoMatrix[i][12] = 0
+	
+	#13. Whether family members knew
 	if data[i][9] == '是':
 		infoMatrix[i][13] = 1
+
+	#14-21. Type of residence
 	if data[i][17] == '无按揭购房':
 		infoMatrix[i][14] = 1
 	elif data[i][17] == '商业按揭房':
 		infoMatrix[i][15] = 1
-	elif data[i][17] == '公积金按揭房':
+	elif data[i][17] == '公积金按揭购房':
 		infoMatrix[i][16] = 1
 	elif data[i][17] == '自建房':
 		infoMatrix[i][17] = 1
@@ -70,12 +89,14 @@ for i in range(numSample):
 		infoMatrix[i][19] = 1
 	else:
 		infoMatrix[i][20] = 1
+
+	#22.Time lived in city
 	try:
 		infoMatrix[i][21] = float(data[i][18])
 	except:
 		infoMatrix[i][21] = 0
 
-	#Education background columns
+	#22-26.Education background columns
 	if data[i][19]=='大学本科':
 		infoMatrix[i][22] = 1
 	elif data[i][19]=='高中及中专':
@@ -87,7 +108,7 @@ for i in range(numSample):
 	else:
 		infoMatrix[26] = 1
 
-	#Maritial status
+	#27-29Maritial status
 	if data[i][21]=='已婚':
 		infoMatrix[i][27]=1
 	elif data[i][21]=='未婚':
@@ -103,7 +124,7 @@ for i in range(numSample):
 	if data[i][25]=='':
 		infoMatrix[i][31]=0
 	else:
-		infoMatrix[i][31]=float(data[2][25])
+		infoMatrix[i][31]=float(data[i][25])
 
 
 	#32-37Job and working company
@@ -167,38 +188,55 @@ for i in range(numSample):
 
 #print(infoMatrix)
 #print (label)
+scaledMatrix = whiten(infoMatrix)
 
 
 
 #K-Nearest Neighbors classification
 kneighborObject = KNeighborsClassifier(5)
-kneighborObject.fit(infoMatrix[321:numSample,:],label[321:numSample])
+kneighborObject.fit(scaledMatrix[0:321,:],label[0:321])
 correctPredictions = 0
-for i in range(0,321):
-	if  (kneighborObject.predict(infoMatrix[i:i+1,:])==label[i]):
+for i in range(321,numSample):
+	if  (kneighborObject.predict(scaledMatrix[i:i+1,:])==label[i]):
 		correctPredictions+=1
-print ('The training accuracy from KNN classification algorithm is: ', (correctPredictions/(321))*100, '%')
+print ('The training accuracy from KNN classification algorithm is: ', (correctPredictions/(numSample-321))*100, '%')
 
 
 #Support vector machine classification
 svmObject = svm.SVC()
-svmObject.fit(infoMatrix[321:numSample,:],label[321:numSample])
+svmObject.fit(scaledMatrix[0:321,:],label[0:321])
 correctPredictionsSvm = 0
-for i in range(321):
-	if (svmObject.predict(infoMatrix[i:i+1,:]) == label[i]):
+for i in range(321,numSample):
+	if (svmObject.predict(scaledMatrix[i:i+1,:]) == label[i]):
 		correctPredictionsSvm +=1
-print ('The training accuracy from SVM classification algorithm is: ', 100*correctPredictionsSvm/(321), '%')
+print ('The training accuracy from SVM classification algorithm is: ', 100*correctPredictionsSvm/(numSample-321), '%')
 
 
 
 #Random forest classification
 rfObject = RandomForestClassifier()
-rfObject.fit(infoMatrix[0:321,:],label[0:321])
+rfObject.fit(scaledMatrix[0:321,:],label[0:321])
 correctPredictionsRf = 0
+#print (rfObject.predict(infoMatrix[321:numSample,:]))
 for i in range(321,numSample):
-	if (rfObject.predict(infoMatrix[i:i+1,:])==label[i]):
+	if (rfObject.predict(scaledMatrix[i:i+1,:])==label[i]):
 		correctPredictionsRf +=1
-print ('The training accuracy from Random Forest classification algorithm is: ', 100*correctPredictionsRf/(numSample- 321), '%')
+print ('The training accuracy from Random Forest algorithm is: ', 100*correctPredictionsRf/(numSample-321), '%')
+
+#Naive Bayes
+nbObject = BernoulliNB()
+nbObject.fit(scaledMatrix[0:321,:],label[0:321])
+correctPredictionsNb = 0
+sameWithSvmCount = 0
+for i in range(321,numSample):
+	if (nbObject.predict(scaledMatrix[i:i+1,:]) == label[i]):
+		correctPredictionsNb +=1
+	if (nbObject.predict(scaledMatrix[i:i+1,:]) == svmObject.predict(scaledMatrix[i:i+1,:])):
+		sameWithSvmCount +=1
+print ('The training accuracy from Naive Bayes algorithm is: ', 100*correctPredictionsNb/(numSample-321), '%')
+print ('Similarity between naive bayes and SVM is: ', 100*sameWithSvmCount/(numSample-321),'%')
+
+
 
 print ('==End of program==')
 
