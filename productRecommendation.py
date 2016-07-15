@@ -311,8 +311,4 @@ while input('end? ') != 'yes':
 
 	print(index)
 
-<<<<<<< HEAD
 '''
-=======
-'''
->>>>>>> origin/svm-and-randomforest-classifiers
