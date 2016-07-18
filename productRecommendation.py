@@ -19,11 +19,19 @@ from sklearn.naive_bayes import BernoulliNB
 from sklearn.preprocessing import Imputer
 from sklearn.preprocessing import OneHotEncoder
 
+
+data = []
+numSample = 0
 with open('../申请客户信息.csv', encoding='gbk') as csvfile:
 	reader = csv.reader(csvfile, delimiter=',', quotechar='"')
 	next(reader)
-	data = []
-	numSample = 0
+	for line in reader:
+		if not line in data:
+			data.append(line)
+			numSample += 1
+with open('../20160718.csv', encoding='gbk') as csvfile:
+	reader = csv.reader(csvfile, delimiter=',', quotechar='"')
+	next(reader)
 	for line in reader:
 		if not line in data:
 			data.append(line)
@@ -34,6 +42,7 @@ infoMatrix = np.zeros((numSample, 0),)
 label = np.zeros((numSample))
 catagoricalColumns = []
 numericalColumns = []
+print ('now we have ', numSample,' samples')
 
 
 for i in range(numSample):
@@ -51,7 +60,7 @@ for i in range(numSample):
 		infoMatrix[i][validColumnsCount] = 1
 	elif data[i][4] == '信薪佳人贷':
 		infoMatrix[i][validColumnsCount] = 2
-	elif data[i][4] == '薪期贷':
+	elif (data[i][4] == '薪期贷' or data[i][4]=='网薪期'):
 		infoMatrix[i][validColumnsCount] = 3
 	else:
 		infoMatrix[i][validColumnsCount] = np.nan
@@ -180,7 +189,7 @@ for i in range(numSample):
 		tempMatrix[:,:-1] = infoMatrix
 		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
 		infoMatrix = tempMatrix	
-		catagoricalColumns.append(validColumnsCount)
+		numericalColumns.append(validColumnsCount)
 	if data[i][19]=='大学本科':
 		infoMatrix[i][validColumnsCount] = 0
 	elif data[i][19]=='高中及中专':
@@ -328,6 +337,10 @@ for i in range(numSample):
 imputerObjectFrequency = Imputer(missing_values='NaN', strategy='most_frequent',)
 for i in catagoricalColumns:
 	infoMatrix[:,i:i+1] = imputerObjectFrequency.fit_transform(infoMatrix[:,i:i+1])
+label = imputerObjectFrequency.fit_transform(label.reshape(-1,1))
+
+
+
 
 #Impute numerical data
 imputerObjectMean = Imputer(missing_values='NaN', strategy='mean')
@@ -340,170 +353,88 @@ for i in numericalColumns:
 #Perform one-hot encoding
 encodingObject = OneHotEncoder(categorical_features = catagoricalColumns, sparse=False)
 infoMatrix = encodingObject.fit_transform(infoMatrix)
-print (infoMatrix)
+#print (infoMatrix)
 
 
 
 
 scaledMatrix = whiten(infoMatrix)
+
+
+
+
+numTestCases = 900
+#Count the number of 0123 in label
+zeros = 0
+ones = 0
+twos = 0
+threes = 0
+for i in range(numTestCases,numSample):
+	if (label[i] == 0):
+		zeros +=1
+	elif (label[i] == 1):
+		ones+=1
+	elif (label[i]==2):
+		twos+=1
+	else:
+		threes+=1
+print ('In the actual label, the number of 0 1 2 3 are ',zeros,'   ', ones, '  ', twos , '  ', threes, '  ', 'respectively')
+
+
+
+
 
 
 
 #K-Nearest Neighbors classification
 kneighborObject = KNeighborsClassifier(5)
-kneighborObject.fit(scaledMatrix[0:321,:],label[0:321])
-correctPredictions = 0
-for i in range(321,numSample):
-	if  (kneighborObject.predict(scaledMatrix[i:i+1,:])==label[i]):
-		correctPredictions+=1
-print ('The training accuracy from KNN classification algorithm is: ', (correctPredictions/(numSample-321))*100, '%')
+kneighborObject.fit(scaledMatrix[0:numTestCases,:],np.ravel(label[0:numTestCases]))
+print ('The training accuracy from KNN classification algorithm is: ', kneighborObject.score(scaledMatrix[numTestCases:numSample,:],np.ravel(label[numTestCases:numSample]))*100, '%')
 
 
 #Support vector machine classification
-svmObject = svm.SVC()
-svmObject.fit(scaledMatrix[0:321,:],label[0:321])
+svmClassWeight = {0:3,1:1,2:1.13,3:1}	#This suffices. Assigning sample weight has essentially the same effect on the result.
+svmObject = svm.SVC(class_weight=svmClassWeight, probability = True)
+svmObject.fit( scaledMatrix[0:numTestCases,:], np.ravel(label[0:numTestCases]))
+
 correctPredictionsSvm = 0
-for i in range(321,numSample):
-	if (svmObject.predict(scaledMatrix[i:i+1,:]) == label[i]):
-		correctPredictionsSvm +=1
-print ('The training accuracy from SVM classification algorithm is: ', 100*correctPredictionsSvm/(numSample-321), '%')
+zeros = 0
+ones = 0
+twos = 0
+threes = 0
+for i in range(numTestCases,numSample):
+	if (svmObject.predict(scaledMatrix[i:i+1,:]) == 0):
+		zeros +=1
+	elif (svmObject.predict(scaledMatrix[i:i+1,:]) == 1):
+		ones+=1
+	elif (svmObject.predict(scaledMatrix[i:i+1,:])==2):
+		twos+=1
+	else:
+		threes+=1
+		print ('In this ', i,'th example, which was predicted to be 3, the label was actually', label[i])
+	if (label[i]==0):
+		print ('For',i,'th, the label is 0 but it\'s predicted to be ', svmObject.predict(scaledMatrix[i:i+1,:]) )
+print ('The number of 0 1 2 3 are ',zeros,'   ', ones, '  ', twos , '  ', threes, '  ', 'respectively')
+print ('The training accuracy from SVM learning algorithm is: ',svmObject.score( scaledMatrix[numTestCases:numSample,:], np.ravel(label[numTestCases:numSample])) *100, '%')
+
 
 
 
 #Random forest classification
 rfObject = RandomForestClassifier()
-rfObject.fit(scaledMatrix[0:321,:],label[0:321])
-correctPredictionsRf = 0
-#print (rfObject.predict(infoMatrix[321:numSample,:]))
-for i in range(321,numSample):
-	if (rfObject.predict(scaledMatrix[i:i+1,:])==label[i]):
-		correctPredictionsRf +=1
-print ('The training accuracy from Random Forest algorithm is: ', 100*correctPredictionsRf/(numSample-321), '%')
+rfObject.fit(scaledMatrix[0:numTestCases,:],np.ravel(label[0:numTestCases]))
+print ('The training accuracy from Random Forest algorithm is: ', 100*rfObject.score(scaledMatrix[numTestCases:numSample,:],np.ravel(label[numTestCases:numSample])), '%')
+
+
+
 
 #Naive Bayes
 nbObject = BernoulliNB()
-nbObject.fit(scaledMatrix[0:321,:],label[0:321])
-correctPredictionsNb = 0
-sameWithSvmCount = 0
-for i in range(321,numSample):
-	if (nbObject.predict(scaledMatrix[i:i+1,:]) == label[i]):
-		correctPredictionsNb +=1
-	if (nbObject.predict(scaledMatrix[i:i+1,:]) == svmObject.predict(scaledMatrix[i:i+1,:])):
-		sameWithSvmCount +=1
-print ('The training accuracy from Naive Bayes algorithm is: ', 100*correctPredictionsNb/(numSample-321), '%')
-print ('Similarity between naive bayes and SVM is: ', 100*sameWithSvmCount/(numSample-321),'%')
+nbObject.fit(scaledMatrix[0:numTestCases,:],np.ravel(label[0:numTestCases]))
+print ('The training accuracy from Naive Bayes algorithm is: ', 100*nbObject.score(scaledMatrix[numTestCases:numSample,:],np.ravel(label[numTestCases:numSample])) , '%')
+
 
 
 
 print ('==End of program==')
 
-
-'''
-scaledMatrix = whiten(infoMatrix)
-scalingCoefficient = np.zeros((numFeature,1),)
-for i in range(numFeature):
-	j =0 			#traverse all training examples until a non-zero number if found
-	while (infoMatrix[j,i]==0):
-		j=j+1
-	scalingCoefficient[i] = scaledMatrix[j,i]/infoMatrix[j,i]	
-#print (scalingCoefficient)
-#print (scaledMatrix)
-
-
-#Perform optimization
-kmObject = KMeans(12,n_init=200)
-kmObject.fit(scaledMatrix)
-print (kmObject.labels_, kmObject.inertia_)'''
-
-
-
-
-
-
-
-
-
-
-
-
-'''sampleNum = size(data["clients"])
-infoMatrix = numpy.zeros((sampleNum,7), float)
-validSampleNum = 0
-numFeature = 7
->>>>>>> Stashed changes
-numCluster = 6
-iter = 1000
-alpha = 0.1
-
-
-stdInfoMatrix = whiten(infoMatrix)
-random.seed(version=2)
-prototype = random.sample(range(sampleNum), numCluster)
-centroids = stdInfoMatrix[prototype]
-ptLabel = label[prototype]
-
-def computeDistance(x,y):
-	dist = 0
-	for i in range(size(x)):
-		dist += (x[i]-y[i])*(x[i]-y[i])
-	return dist
-
-
-def findNearestCentroid(index):
-	minDist = computeDistance(stdInfoMatrix[index], centroids[0])
-	minIndex = 0
-	for i in range(numCluster):
-		tempDist = computeDistance(stdInfoMatrix[index], centroids[i])
-		if tempDist < minDist:
-			minDist = tempDist
-			minIndex = i
-	return minIndex
-
-def close(cIndex, sIndex):
-	for i in range(numFeature):
-		centroids[cIndex][i] += alpha * (stdInfoMatrix[sIndex][i] - centroids[cIndex][i])
-
-def far(cIndex, sIndex):
-	for i in range(numFeature):
-		centroids[cIndex][i] -= alpha * (stdInfoMatrix[sIndex][i] - centroids[cIndex][i])
-
-for i in range(iter):
-	sampleIndex = random.choice(range(validSampleNum))
-	centroidIndex = findNearestCentroid(sampleIndex)
-	if label[sampleIndex] == label[centroidIndex]:
-		close(centroidIndex, sampleIndex)
-	else:
-		far(centroidIndex, sampleIndex)
-
-print(centroids)
-
-
-centroids = kmeans(stdInfoMatrix, numCluster, 500)[0]
-print(centroids)
-
-
-while input('end? ') != 'yes':
-	newClient = numpy.zeros(numFeature, int)
-	newClient[0] = input("Age: ")
-	newClient[1] = input("Gender: ")
-	newClient[2] = input("Married: ")
-	newClient[3] = input("Education: ")
-	newClient[4] = input("Net Income: ")
-	newClient[5] = input("Dependent: ")
-	newClient[6] = input("Vehicle: ")
-
-	distance = numpy.zeros(numCluster, float)
-	for i in range(4):
-		for j in range(numFeature):
-			distance[i] += abs(newClient[j] - centroids[i][j])
-		if i == 0:
-			minDist = distance[i]
-			index = i
-		else:
-			if distance[i] < minDist:
-				minDist = distance[i]
-				index = i
-
-	print(index)
-
-'''
