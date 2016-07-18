@@ -18,6 +18,9 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.naive_bayes import BernoulliNB 
 from sklearn.preprocessing import Imputer
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.cross_validation import KFold
+from sklearn.cross_validation import cross_val_score
+from sklearn import cross_validation
 
 
 data = []
@@ -363,7 +366,7 @@ scaledMatrix = whiten(infoMatrix)
 
 
 
-numTestCases = 900
+numTestCases = 500
 #Count the number of 0123 in label
 zeros = 0
 ones = 0
@@ -397,7 +400,6 @@ svmClassWeight = {0:3,1:1,2:1.13,3:1}	#This suffices. Assigning sample weight ha
 svmObject = svm.SVC(class_weight=svmClassWeight, probability = True)
 svmObject.fit( scaledMatrix[0:numTestCases,:], np.ravel(label[0:numTestCases]))
 
-correctPredictionsSvm = 0
 zeros = 0
 ones = 0
 twos = 0
@@ -417,7 +419,8 @@ for i in range(numTestCases,numSample):
 print ('The number of 0 1 2 3 are ',zeros,'   ', ones, '  ', twos , '  ', threes, '  ', 'respectively')
 print ('The training accuracy from SVM learning algorithm is: ',svmObject.score( scaledMatrix[numTestCases:numSample,:], np.ravel(label[numTestCases:numSample])) *100, '%')
 
-
+scores = cross_validation.cross_val_score(svmObject, scaledMatrix, np.ravel(label), cv=6)
+print (scores)
 
 
 #Random forest classification
