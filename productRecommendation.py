@@ -25,7 +25,7 @@ from sklearn import cross_validation
 
 data = []
 numSample = 0
-with open('../申请客户信息.csv', encoding='gbk') as csvfile:
+'''with open('../申请客户信息.csv', encoding='gbk') as csvfile:
 	reader = csv.reader(csvfile, delimiter=',', quotechar='"')
 	next(reader)
 	for line in reader:
@@ -38,7 +38,15 @@ with open('../20160718.csv', encoding='gbk') as csvfile:
 	for line in reader:
 		if not line in data:
 			data.append(line)
+			numSample += 1'''
+with open('../20160719.csv', encoding='gbk') as csvfile:
+	reader = csv.reader(csvfile, delimiter=',', quotechar='"')
+	next(reader)
+	for line in reader:
+		if not line in data:
+			data.append(line)
 			numSample += 1
+
 
 
 infoMatrix = np.zeros((numSample, 0),)
@@ -49,8 +57,24 @@ print ('now we have ', numSample,' samples')
 
 
 for i in range(numSample):
-	#0. Type applied
+	
 	validColumnsCount = 0
+	#Age
+	if i==0:
+		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
+		tempMatrix[:,:-1] = infoMatrix
+		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
+		infoMatrix = tempMatrix
+		numericalColumns.append(validColumnsCount)
+	try:
+		infoMatrix[i][validColumnsCount] = (2016-float(data[i][42][-4:]))
+	except:
+		infoMatrix[i][validColumnsCount] = np.nan
+	validColumnsCount+=1
+
+
+
+	#0. Type applied
 	if i==0:
 		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
 		tempMatrix[:,:-1] = infoMatrix
@@ -192,7 +216,7 @@ for i in range(numSample):
 		tempMatrix[:,:-1] = infoMatrix
 		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
 		infoMatrix = tempMatrix	
-		numericalColumns.append(validColumnsCount)
+		catagoricalColumns.append(validColumnsCount)
 	if data[i][19]=='大学本科':
 		infoMatrix[i][validColumnsCount] = 0
 	elif data[i][19]=='高中及中专':
@@ -332,9 +356,7 @@ for i in range(numSample):
 
 
 
-
-
-#===Data imputation to be added below here===
+#===Data preprocessing below===
 
 #Impute catagorical data
 imputerObjectFrequency = Imputer(missing_values='NaN', strategy='most_frequent',)
@@ -342,37 +364,29 @@ for i in catagoricalColumns:
 	infoMatrix[:,i:i+1] = imputerObjectFrequency.fit_transform(infoMatrix[:,i:i+1])
 label = imputerObjectFrequency.fit_transform(label.reshape(-1,1))
 
-
-
-
 #Impute numerical data
 imputerObjectMean = Imputer(missing_values='NaN', strategy='mean')
 for i in numericalColumns:
 	infoMatrix[:,i:i+1] = imputerObjectMean.fit_transform(infoMatrix[:,i:i+1])
 
-
-
-
 #Perform one-hot encoding
 encodingObject = OneHotEncoder(categorical_features = catagoricalColumns, sparse=False)
 infoMatrix = encodingObject.fit_transform(infoMatrix)
-#print (infoMatrix)
 
-
-
-
+#Scaling
 scaledMatrix = whiten(infoMatrix)
+numTrainingExamples = 1000
+print (numTrainingExamples, ' are being used to train, and ', numSample - numTrainingExamples,' are used to test.')
 
 
 
 
-numTestCases = 500
 #Count the number of 0123 in label
 zeros = 0
 ones = 0
 twos = 0
 threes = 0
-for i in range(numTestCases,numSample):
+for i in range(numTrainingExamples,numSample):
 	if (label[i] == 0):
 		zeros +=1
 	elif (label[i] == 1):
@@ -381,30 +395,27 @@ for i in range(numTestCases,numSample):
 		twos+=1
 	else:
 		threes+=1
-print ('In the actual label, the number of 0 1 2 3 are ',zeros,'   ', ones, '  ', twos , '  ', threes, '  ', 'respectively')
+print ('In the actual label of test data, there are ',zeros,'   ', ones, '  ', twos , '  ', threes, '  ', ' 0,1,2,3 respectively')
 
 
-
-
-
-
+#====Actual Learning Processes====
 
 #K-Nearest Neighbors classification
 kneighborObject = KNeighborsClassifier(5)
-kneighborObject.fit(scaledMatrix[0:numTestCases,:],np.ravel(label[0:numTestCases]))
-print ('The training accuracy from KNN classification algorithm is: ', kneighborObject.score(scaledMatrix[numTestCases:numSample,:],np.ravel(label[numTestCases:numSample]))*100, '%')
+kneighborObject.fit(scaledMatrix[0:numTrainingExamples,:],np.ravel(label[0:numTrainingExamples]))
+print ('The training accuracy from KNN classification algorithm is: ', kneighborObject.score(scaledMatrix[numTrainingExamples:numSample,:],np.ravel(label[numTrainingExamples:numSample]))*100, '%')
 
 
 #Support vector machine classification
 svmClassWeight = {0:3,1:1,2:1.13,3:1}	#This suffices. Assigning sample weight has essentially the same effect on the result.
-svmObject = svm.SVC(class_weight=svmClassWeight, probability = True)
-svmObject.fit( scaledMatrix[0:numTestCases,:], np.ravel(label[0:numTestCases]))
+svmObject = svm.SVC(C=1,class_weight=svmClassWeight, probability = True)
+svmObject.fit( scaledMatrix[0:numTrainingExamples,:], np.ravel(label[0:numTrainingExamples]))
 
 zeros = 0
 ones = 0
 twos = 0
 threes = 0
-for i in range(numTestCases,numSample):
+for i in range(numTrainingExamples,numSample):
 	if (svmObject.predict(scaledMatrix[i:i+1,:]) == 0):
 		zeros +=1
 	elif (svmObject.predict(scaledMatrix[i:i+1,:]) == 1):
@@ -413,28 +424,25 @@ for i in range(numTestCases,numSample):
 		twos+=1
 	else:
 		threes+=1
-		print ('In this ', i,'th example, which was predicted to be 3, the label was actually', label[i])
-	if (label[i]==0):
-		print ('For',i,'th, the label is 0 but it\'s predicted to be ', svmObject.predict(scaledMatrix[i:i+1,:]) )
-print ('The number of 0 1 2 3 are ',zeros,'   ', ones, '  ', twos , '  ', threes, '  ', 'respectively')
-print ('The training accuracy from SVM learning algorithm is: ',svmObject.score( scaledMatrix[numTestCases:numSample,:], np.ravel(label[numTestCases:numSample])) *100, '%')
+print ('In SVM, the number of 0 1 2 3 are ',zeros,'   ', ones, '  ', twos , '  ', threes, '  ', 'respectively')
+print ('The training accuracy from SVM learning algorithm is: ',svmObject.score( scaledMatrix[numTrainingExamples:numSample,:], np.ravel(label[numTrainingExamples:numSample])) *100, '%')
 
-scores = cross_validation.cross_val_score(svmObject, scaledMatrix, np.ravel(label), cv=6)
+scores = cross_validation.cross_val_score(svmObject, scaledMatrix, np.ravel(label), cv=4)
 print (scores)
 
 
 #Random forest classification
 rfObject = RandomForestClassifier()
-rfObject.fit(scaledMatrix[0:numTestCases,:],np.ravel(label[0:numTestCases]))
-print ('The training accuracy from Random Forest algorithm is: ', 100*rfObject.score(scaledMatrix[numTestCases:numSample,:],np.ravel(label[numTestCases:numSample])), '%')
+rfObject.fit(scaledMatrix[0:numTrainingExamples,:],np.ravel(label[0:numTrainingExamples]))
+print ('The training accuracy from Random Forest algorithm is: ', 100*rfObject.score(scaledMatrix[numTrainingExamples:numSample,:],np.ravel(label[numTrainingExamples:numSample])), '%')
 
 
 
 
 #Naive Bayes
 nbObject = BernoulliNB()
-nbObject.fit(scaledMatrix[0:numTestCases,:],np.ravel(label[0:numTestCases]))
-print ('The training accuracy from Naive Bayes algorithm is: ', 100*nbObject.score(scaledMatrix[numTestCases:numSample,:],np.ravel(label[numTestCases:numSample])) , '%')
+nbObject.fit(scaledMatrix[0:numTrainingExamples,:],np.ravel(label[0:numTrainingExamples]))
+print ('The training accuracy from Naive Bayes algorithm is: ', 100*nbObject.score(scaledMatrix[numTrainingExamples:numSample,:],np.ravel(label[numTrainingExamples:numSample])) , '%')
 
 
 
