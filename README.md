@@ -43,8 +43,3 @@ First, a new support vector machine object is created. The “class_weight” pa
 
 The remaining part of client information (666 entries) is used to test the accuracy of SVM model prediction. The corresponding entries in the information matrix are parsed into the predict_proba function of the SVM object. For each sample data entry, a vector that indicates its probability of belonging to each of the four labels is generated according to the probability model trained in step 3. The resulting output is a 658 by 4 matrix and stored into a new matrix proba. Then, two for loops are used to iterate through each entry and through each probability measure and assign each test sample to the label it has the highest probability of belonging to. The predictions are compared with the user label data and compute an accuracy of prediction. By optimising the weights for different label groups, we can achieve a prediction accuracy of approximately 81.38%.
 剩余的666条客户信息（不包括标签）被用作测试支持向量机模型预测准确率的测试样本。对每一条客户信息运用支持向量机对象中的predict_proba函数都可以得到一个表示该客户属于每一种标签的对应概率。我们将对应概率最大的标签作为对该用户的标签预测，并与实际已知的用户标签进行对比。通过调整前一步中所述字典内的各标签对应比重，预测准确率最高可达81.38％。
-Which kind of product did each customer actually buy is unknown.
-未知被分析的顾客实际上买了哪种产品。(因此无法评估是次训练的准确度)
-
-How to quantify non-quantitative data (e.g. Occupation, Residential address, etc)
-如何量化非定量的信息？（比如职业，家庭住址等等）
