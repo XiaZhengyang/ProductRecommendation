@@ -15,23 +15,23 @@ The original data is in .csv format. To decode it, use the “import csv” comm
 Import numpy to create a matrix. Scan through ‘data’, an store the useful information into the newly created matrix. Currently, the features used include the following:
 使用numpy创建一个矩阵，扫描上一步创建的列表，把有用的信息存入这个矩阵内。现时用到的特征信息包括：
 
-0. 所申请的种类: 信优贷/信薪贷/信薪佳人贷/薪期贷(网薪期)
-1. 申请的期限: 24/36/48
-2. 申请的金额
-3. 贷款目的 消费/个人资金周转/经营周转/其他
-4. 最高可接受的每月还款额
-5. 家人是否知情 是/否
-6. 住房类型 无按揭购房/商业按揭房/公积金按揭购房/自建房/单位住房/亲属住房/租用
-7. 本市生活时长
-8. 学历 大学本科/高中及中专/大专/硕士/初中及以下
-9. 婚姻状态 已婚/未婚/离异 （建议增加“丧偶”和/或”分居“的选项，以增加准确性）
-10.性别 男/女
-11.车辆价值
-12.工作岗位 一般正式员工/中级管理人员/一般管理人员/派遣员工/高级管理人员/负责人
-13.工作单位类别 '机关事业单位/外资企业/私营企业/国有股份/合资企业/民营企业/个体
-In the abovementioned 14 features, 2,4,7,11 are numerical features and the remaining are catagorical features.
-(Age is to be added to the list of features)
-在上述特征中，2、4、7、11是数值型特征，其他都是分类型特征。
+>年龄 
+>所申请的种类: 信优贷/信薪贷/信薪佳人贷/薪期贷(网薪期)
+>申请的期限: 24/36/48
+>申请的金额
+>贷款目的 消费/个人资金周转/经营周转/其他
+>最高可接受的每月还款额
+>家人是否知情 是/否
+>住房类型 无按揭购房/商业按揭房/公积金按揭购房/自建房/单位住房/亲属住房/租用
+>本市生活时长
+>学历 大学本科/高中及中专/大专/硕士/初中及以下
+>婚姻状态 已婚/未婚/离异 （建议增加“丧偶”和/或”分居“的选项，以增加准确性）
+>性别 男/女
+>车辆价值
+>工作岗位 一般正式员工/中级管理人员/一般管理人员/派遣员工/高级管理人员/负责人
+>工作单位类别 '机关事业单位/外资企业/私营企业/国有股份/合资企业/民营企业/个体
+
+在上述特征中，年龄、申请金额、最高可接受还款额、本市生活时长、车辆价值是数值型特征，其他都是分类型特征。
 
 
 Column vector (named 'label') has four possible labels, namely:
