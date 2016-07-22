@@ -16,48 +16,38 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.naive_bayes import BernoulliNB 
+from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import Imputer
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.cross_validation import KFold
 from sklearn.cross_validation import cross_val_score
 from sklearn import cross_validation
+from sklearn.grid_search import GridSearchCV
+from sklearn.tree import DecisionTreeClassifier
 
 
 data = []
 numSample = 0
-'''with open('../申请客户信息.csv', encoding='gbk') as csvfile:
-	reader = csv.reader(csvfile, delimiter=',', quotechar='"')
-	next(reader)
-	for line in reader:
-		if not line in data:
-			data.append(line)
-			numSample += 1
-with open('../20160718.csv', encoding='gbk') as csvfile:
-	reader = csv.reader(csvfile, delimiter=',', quotechar='"')
-	next(reader)
-	for line in reader:
-		if not line in data:
-			data.append(line)
-			numSample += 1'''
+
 with open('../20160719.csv', encoding='gbk') as csvfile:
 	reader = csv.reader(csvfile, delimiter=',', quotechar='"')
 	next(reader)
 	for line in reader:
 		if not line in data:
-			data.append(line)
-			numSample += 1
-
-
+			if (line[39][:3] == '信优贷' or line[39][:3] =='信薪贷'):
+				data.append(line)
+				numSample += 1
 
 infoMatrix = np.zeros((numSample, 0),)
-label = np.zeros((numSample))
+label = np.zeros(numSample)
+isApproved = np.zeros(numSample)
 catagoricalColumns = []
 numericalColumns = []
 print ('now we have ', numSample,' samples')
 
 
 for i in range(numSample):
-	
+
 	validColumnsCount = 0
 	#Age
 	if i==0:
@@ -75,7 +65,7 @@ for i in range(numSample):
 
 
 	#0. Type applied
-	if i==0:
+	'''if i==0:
 		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
 		tempMatrix[:,:-1] = infoMatrix
 		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
@@ -131,18 +121,18 @@ for i in range(numSample):
 		tempMatrix[:,:-1] = infoMatrix
 		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
 		infoMatrix = tempMatrix
-		catagoricalColumns.append(validColumnsCount)
+		numericalColumns.append(validColumnsCount)
 	if data[i][7] == '消费':
-		infoMatrix[i][validColumnsCount] = 0
-	elif data[i][7] == '经营周转':
 		infoMatrix[i][validColumnsCount] = 1
+	elif data[i][7] == '经营周转':
+		infoMatrix[i][validColumnsCount] = 10000
 	elif data[i][7] == '个人资金周转':
-		infoMatrix[i][validColumnsCount] = 2
+		infoMatrix[i][validColumnsCount] = 100
 	elif data[i][7] == '其他':
-		infoMatrix[i][validColumnsCount] = 3
+		infoMatrix[i][validColumnsCount] = 0
 	else:
 		infoMatrix[i][validColumnsCount] = np.nan
-	validColumnsCount+=1
+	validColumnsCount+=1'''
 	
 	#4.Maximun acceptable monthly payment
 	if i==0:
@@ -157,8 +147,9 @@ for i in range(numSample):
 		infoMatrix[i][validColumnsCount] = np.nan
 	validColumnsCount+=1
 	
+
 	#5. Whether family members knew
-	if i==0:
+	'''if i==0:
 		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
 		tempMatrix[:,:-1] = infoMatrix
 		infoMatrix.resize(np.size(tempMatrix,0),np.size(tempMatrix,1))
@@ -170,7 +161,7 @@ for i in range(numSample):
 		infoMatrix[i][validColumnsCount] = 0
 	else:
 		infoMatrix[i][validColumnsCount] = np.nan
-	validColumnsCount+=1
+	validColumnsCount+=1'''
 
 	#6. Type of residence
 	if i==0:
@@ -231,7 +222,7 @@ for i in range(numSample):
 		infoMatrix[i][validColumnsCount] = np.nan
 	validColumnsCount+=1
 
-	#9Maritial status
+	#9Marital status
 	if i==0:
 		tempMatrix = np.zeros(( np.size(infoMatrix,0),np.size(infoMatrix,1)+1 ))
 		tempMatrix[:,:-1] = infoMatrix
@@ -326,40 +317,49 @@ for i in range(numSample):
 		infoMatrix[i][validColumnsCount]= np.nan
 	validColumnsCount+=1
 
+
+
+	#Suitable product
 	if data[i][39] == '信优贷23':
 		label[i] = 1
 	elif data[i][39] == '信薪贷25':
 		label[i] = 2
 	elif data[i][39] == '信薪贷23':
-		label[i] = 2
-	elif data[i][39] == '信优贷19':
-		label[i] = 1
-	elif data[i][39] == '信薪佳人贷21':
 		label[i] = 3
+	elif data[i][39] == '信优贷19':
+		label[i] = 4
+	elif data[i][39] == '信薪佳人贷21':
+		label[i] = 5
 	elif data[i][39] == '信优贷17_A11':
-		label[i] = 1
+		label[i] = 6
 	elif data[i][39] == '信优贷21':
-		label[i] = 1
+		label[i] = 7
 	elif data[i][39] == '信薪贷27':
-		label[i] = 2
+		label[i] = 8
 	elif data[i][39] == '薪期贷17':
-		label[i] = 0
+		label[i] = 9
 	elif data[i][39] == '薪期贷13':
-		label[i] = 0
+		label[i] = 10
 	elif data[i][39] == '薪期贷10':
-		label[i] = 0
+		label[i] = 11
 	elif data[i][39] == '薪期贷07':
 		label[i] = 0
 	else:
 		label[i] = np.nan
 	
 
+	#Approval status
+	if data[i][38] == '通过':
+		isApproved[i] = 1
+	else:
+		isApproved[i] = 0
+
 
 
 #===Data preprocessing below===
 
 #Impute catagorical data
-imputerObjectFrequency = Imputer(missing_values='NaN', strategy='most_frequent',)
+imputerObjectFrequency = Imputer(missing_values='NaN', strategy='most_frequent')
 for i in catagoricalColumns:
 	infoMatrix[:,i:i+1] = imputerObjectFrequency.fit_transform(infoMatrix[:,i:i+1])
 label = imputerObjectFrequency.fit_transform(label.reshape(-1,1))
@@ -369,80 +369,105 @@ imputerObjectMean = Imputer(missing_values='NaN', strategy='mean')
 for i in numericalColumns:
 	infoMatrix[:,i:i+1] = imputerObjectMean.fit_transform(infoMatrix[:,i:i+1])
 
+
+
+
+
+
 #Perform one-hot encoding
 encodingObject = OneHotEncoder(categorical_features = catagoricalColumns, sparse=False)
 infoMatrix = encodingObject.fit_transform(infoMatrix)
 
+
 #Scaling
-scaledMatrix = whiten(infoMatrix)
-numTrainingExamples = 1000
-print (numTrainingExamples, ' are being used to train, and ', numSample - numTrainingExamples,' are used to test.')
+scalingObject = StandardScaler()
+scaledMatrix = scalingObject.fit_transform(infoMatrix)
 
 
-
-
-#Count the number of 0123 in label
-zeros = 0
-ones = 0
-twos = 0
-threes = 0
-for i in range(numTrainingExamples,numSample):
-	if (label[i] == 0):
-		zeros +=1
-	elif (label[i] == 1):
-		ones+=1
-	elif (label[i]==2):
-		twos+=1
-	else:
-		threes+=1
-print ('In the actual label of test data, there are ',zeros,'   ', ones, '  ', twos , '  ', threes, '  ', ' 0,1,2,3 respectively')
 
 
 #====Actual Learning Processes====
 
 #K-Nearest Neighbors classification
 kneighborObject = KNeighborsClassifier(5)
-kneighborObject.fit(scaledMatrix[0:numTrainingExamples,:],np.ravel(label[0:numTrainingExamples]))
-print ('The training accuracy from KNN classification algorithm is: ', kneighborObject.score(scaledMatrix[numTrainingExamples:numSample,:],np.ravel(label[numTrainingExamples:numSample]))*100, '%')
+kneighborScores = cross_validation.cross_val_score(kneighborObject,scaledMatrix,isApproved,cv=7)
+print("Accuracy(Knn for approval): %0.4f (+/- %0.3f)" % (kneighborScores.mean(), kneighborScores.std() * 2))
+
 
 
 #Support vector machine classification
-svmClassWeight = {0:3,1:1,2:1.13,3:1}	#This suffices. Assigning sample weight has essentially the same effect on the result.
-svmObject = svm.SVC(C=1,class_weight=svmClassWeight, probability = True)
-svmObject.fit( scaledMatrix[0:numTrainingExamples,:], np.ravel(label[0:numTrainingExamples]))
+classWeight = {2:1.5,4:0.5,6:2,7:2.5,8:1.4,9:1.6}
+svmObject_product = svm.SVC(C = 1.2 ,probability = True)
+svmScores_product = cross_validation.cross_val_score(svmObject_product,scaledMatrix[0:1600,:],np.ravel(label[0:1600]),cv=4)
+print("Accuracy(SVM for product, first 1200 samples): %0.4f (+/- %0.3f)" % (svmScores_product.mean(), svmScores_product.std() * 2))
 
-zeros = 0
-ones = 0
-twos = 0
-threes = 0
-for i in range(numTrainingExamples,numSample):
-	if (svmObject.predict(scaledMatrix[i:i+1,:]) == 0):
-		zeros +=1
-	elif (svmObject.predict(scaledMatrix[i:i+1,:]) == 1):
-		ones+=1
-	elif (svmObject.predict(scaledMatrix[i:i+1,:])==2):
-		twos+=1
-	else:
-		threes+=1
-print ('In SVM, the number of 0 1 2 3 are ',zeros,'   ', ones, '  ', twos , '  ', threes, '  ', 'respectively')
-print ('The training accuracy from SVM learning algorithm is: ',svmObject.score( scaledMatrix[numTrainingExamples:numSample,:], np.ravel(label[numTrainingExamples:numSample])) *100, '%')
+svmObject_product.fit(scaledMatrix,np.ravel(label))
+labelsCount = np.zeros(12)
+predictionsCount = np.zeros(12)
+for i in range(numSample):
+	labelsCount[int(label[i])]+=1
+	predictionsCount[int( svmObject_product.predict(scaledMatrix[i:i+1,:]) )]+=1
+print (labelsCount)
+print (predictionsCount)
 
-scores = cross_validation.cross_val_score(svmObject, scaledMatrix, np.ravel(label), cv=4)
-print (scores)
+
+
+
+
+
+'''for i in range(numSample):
+	print (svmObject_product.predict(scaledMatrix[i:i+1,:]))
+encodeIndices = encodingObject.feature_indices_'''
+
+
+
+'''input1 = int(input('Please input your age>>'))
+input2 = int(input('Please input your maximum acceptable monthly payment>>'))
+input3 = int(input('Please input your type of residence0-6>>'))
+input4 = int(input('please input the number of years you have lived in this city>>'))
+input5 = int(input('please input your education background0-4>>'))
+input6 = int(input('please input your marital status0-2>>'))
+input7 = int(input('please input your gender 1 for male>>'))
+input8 = int(input('please input the value of your vehicle (if none input 0)>>'))
+input9 = int(input('please input the job within your company0-5>>'))
+input10 = int(input('please input the type of your company 0-6>>'))
+encodedArray = np.zeros(np.size(scaledMatrix,1))
+encodedArray[encodeIndices[0]+input3] = 1
+encodedArray[encodeIndices[1]+input5] = 1
+encodedArray[encodeIndices[2]+input6] = 1
+encodedArray[encodeIndices[3]+input7] = 1
+encodedArray[encodeIndices[4]+input9] = 1
+encodedArray[encodeIndices[5]+input10] = 1
+encodedArray[encodeIndices[6]] = input1
+encodedArray[encodeIndices[6]+1] = input2
+encodedArray[encodeIndices[6]+2] = input4
+encodedArray[encodeIndices[6]+3] = input8
+encodedArray = scalingObject.transform(encodedArray.reshape(1,-1))'''
+
+
+
+
+#SVM classification
+svmObject_approval = svm.SVC()
+svmScores_approval = cross_validation.cross_val_score(svmObject_approval ,scaledMatrix,isApproved,cv=7)
+print("Accuracy(SVM for approval): %0.4f (+/- %0.3f)" % (svmScores_approval.mean(), svmScores_approval.std() * 2))
+
+
 
 
 #Random forest classification
-rfObject = RandomForestClassifier()
-rfObject.fit(scaledMatrix[0:numTrainingExamples,:],np.ravel(label[0:numTrainingExamples]))
-print ('The training accuracy from Random Forest algorithm is: ', 100*rfObject.score(scaledMatrix[numTrainingExamples:numSample,:],np.ravel(label[numTrainingExamples:numSample])), '%')
-
+rfObject_Approval = RandomForestClassifier()
+rfScores = cross_validation.cross_val_score(rfObject_Approval ,scaledMatrix,isApproved,cv=7)
+print("Accuracy(RF for approval): %0.4f (+/- %0.3f)" % (rfScores.mean(), rfScores.std() * 2))
 
 
 
 #Naive Bayes
-nbObject = BernoulliNB()
-nbObject.fit(scaledMatrix[0:numTrainingExamples,:],np.ravel(label[0:numTrainingExamples]))
-print ('The training accuracy from Naive Bayes algorithm is: ', 100*nbObject.score(scaledMatrix[numTrainingExamples:numSample,:],np.ravel(label[numTrainingExamples:numSample])) , '%')
+nbObject_Approval = BernoulliNB()
+nbScores = cross_validation.cross_val_score(nbObject_Approval,scaledMatrix,isApproved,cv=7)
+print("Accuracy(NB for approval): %0.4f (+/- %0.3f)" % (nbScores.mean(), nbScores.std() * 2))
+
+
 
 
 
